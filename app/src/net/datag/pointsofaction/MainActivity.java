@@ -8,6 +8,7 @@ import net.datag.pointsofaction.LocationEntryContract.LocationEntry;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.database.Cursor;
@@ -16,7 +17,9 @@ import android.location.Location;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.ResourceCursorAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,11 +46,11 @@ public class MainActivity extends Activity implements
     LocationClient mLocationClient;
     
 	private TextView textLatLng;
-	private TextView textInfo;
+	//private TextView textInfo;
 	private ListView listLocations;
 	
 	SimpleCursorAdapter mAdapter;
-	private List<Location> locations = new ArrayList<Location>();
+	private List<Entry> locations = new ArrayList<Entry>();
 
 
 	@Override
@@ -56,7 +59,7 @@ public class MainActivity extends Activity implements
 		setContentView(R.layout.activity_main);
 		
 		textLatLng = (TextView) findViewById(R.id.text_latlng);
-		textInfo = (TextView) findViewById(R.id.text_info);
+		//textInfo = (TextView) findViewById(R.id.text_info);
 		listLocations = (ListView) findViewById(R.id.list_locations);
 		
 		
@@ -101,39 +104,85 @@ public class MainActivity extends Activity implements
 	         sortOrder                                 // The sort order
 	         );
         
-	  
 	     
-	     SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, R.layout.view_listitem,
-	    		 	c, new String[] {LocationEntry.COLUMN_NAME_NAME, LocationEntry.COLUMN_NAME_LATITUDE}, new int[] { R.id.view_listitem_text1, R.id.view_listitem_text2 }, 0);
+	     // add to index
+	     boolean result = c.moveToFirst();
+	     while (result) {
+	    	 String name = c.getString(c.getColumnIndexOrThrow(LocationEntry.COLUMN_NAME_NAME));
+	    	 double lat = c.getDouble(c.getColumnIndexOrThrow(LocationEntry.COLUMN_NAME_LATITUDE));
+	    	 double lng = c.getDouble(c.getColumnIndexOrThrow(LocationEntry.COLUMN_NAME_LONGITUDE));
+	    	 
+	    	 Location location = new Location("app");
+	    	 location.setLatitude(lat);
+	    	 location.setLongitude(lng);
+	    	 
+	    	 locations.add(new Entry(name, location));
+	    	 
+	    	 result = c.moveToNext();
+	     }
+	     
+	     // add to listview
+	     final class EntryCursorAdapter extends ResourceCursorAdapter {
 
-	    	
+			public EntryCursorAdapter(Context context, Cursor c) {
+				super(context, R.layout.view_listitem, c, 0);
+			}
+
+			@Override
+			public void bindView(View view, Context context, Cursor cursor) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public View newView(Context context, Cursor cursor, ViewGroup parent) {
+				View view = super.newView(context, cursor, parent);
+				
+				int columnIndex = cursor.getColumnIndexOrThrow(LocationEntry.COLUMN_NAME_NAME);
+				String name = cursor.getString(columnIndex);
+				view.setTag(name);	// set view tag
+				
+				TextView viewText1 = (TextView) view.findViewById(R.id.view_listitem_text1);
+				viewText1.setText(name);
+				
+				
+		 		TextView viewText2 = (TextView) view.findViewById(R.id.view_listitem_text2);
+		 		viewText2.setText("-");
+		 		
+				return view;
+			}
+	    	 
+	     };
+		     
+		 EntryCursorAdapter adapter = new EntryCursorAdapter(this, c);
+	     
 	     listLocations.setAdapter(adapter);
 	}
 	
 	public void doTest(View view) {
-		class Entry {
+		final class TestEntry {
 			public String name;
 			public double lat;
 			public double lng;
 			
-			public Entry(String name, double lat, double lng) {
+			public TestEntry(String name, double lat, double lng) {
 				this.name = name;
 				this.lat = lat;
 				this.lng = lng;
 			}
 		};
 		
-		Entry[] entries = {
-			new Entry("Home", 48.03504, 10.73137),
-			new Entry("Parents", 47.99843, 10.78052),
-			new Entry("Work", 48.03301, 10.73231)
+		TestEntry[] entries = {
+			new TestEntry("Home", 48.03504, 10.73137),
+			new TestEntry("Parents", 47.99843, 10.78052),
+			new TestEntry("Work", 48.03301, 10.73231)
 		};
 		
 		try {
 			LocationEntryDbHelper mDbHelper = new LocationEntryDbHelper(this);
 			SQLiteDatabase db = mDbHelper.getWritableDatabase();
 			
-			for (Entry entry: entries) {
+			for (TestEntry entry: entries) {
 				// Create a new map of values, where column names are the keys
 				ContentValues values = new ContentValues();
 				values.put(LocationEntry.COLUMN_NAME_NAME, entry.name);
@@ -141,7 +190,7 @@ public class MainActivity extends Activity implements
 				values.put(LocationEntry.COLUMN_NAME_LONGITUDE, entry.lng);
 				
 				// Insert the new row, returning the primary key value of the new row
-				long newRowId = db.insert(LocationEntry.TABLE_NAME, null, values);
+				/* long newRowId = */ db.insert(LocationEntry.TABLE_NAME, null, values);
 			}
         
 		} catch (Exception e) {
@@ -149,6 +198,24 @@ public class MainActivity extends Activity implements
         	System.out.println(e.getMessage());
         }
 	}
+	
+	final private class Entry {
+		private String name;
+		private Location location;
+		
+		public Entry(String name, Location location) {
+			this.name = name;
+			this.location = location;
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+		public Location getLocation() {
+			return location;
+		}
+	};
 
 	@Override
 	protected void onStart() {
@@ -286,20 +353,23 @@ public class MainActivity extends Activity implements
 		///////////////////////////////////
 		String strInfo = "";
 		DecimalFormat fmtKm = new DecimalFormat("0.00");
-		for (Location l: locations) {
+		for (Entry entry: locations) {
 			if (location != null) {
-				float d = location.distanceTo(l);
+				float d = location.distanceTo(entry.location);
 				
 				if (d < 1000) {
-					strInfo += Math.round(d) + " m \n";
+					strInfo = Math.round(d) + " m ";
 				} else {
-					strInfo += fmtKm.format(d / 1000) + " km\n";
+					strInfo = fmtKm.format(d / 1000) + " km";
 				}
 			} else {
-				strInfo += "?\n";
+				strInfo = "?";
 			}
+			
+			View view = listLocations.findViewWithTag(entry.name);
+			TextView textview = (TextView) view.findViewById(R.id.view_listitem_text2);
+			textview.setText(strInfo);
 		}
-		textInfo.setText(strInfo);
 	}
 
 
