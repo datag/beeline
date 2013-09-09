@@ -19,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -49,9 +50,9 @@ public class MainActivity extends Activity implements
 	private TextView textLatLng;
 	//private TextView textInfo;
 	private ListView listLocations;
+	private Location lastLocation;
 	
 	SimpleCursorAdapter mAdapter;
-	private List<Entry> locations = new ArrayList<Entry>();
 
 
 	@Override
@@ -104,35 +105,23 @@ public class MainActivity extends Activity implements
 	         null,                                     // don't filter by row groups
 	         sortOrder                                 // The sort order
 	         );
-        
-	     
-	     // add to index
-	     boolean result = c.moveToFirst();
-	     while (result) {
-	    	 String name = c.getString(c.getColumnIndexOrThrow(LocationEntry.COLUMN_NAME_NAME));
-	    	 double lat = c.getDouble(c.getColumnIndexOrThrow(LocationEntry.COLUMN_NAME_LATITUDE));
-	    	 double lng = c.getDouble(c.getColumnIndexOrThrow(LocationEntry.COLUMN_NAME_LONGITUDE));
-	    	 
-	    	 Location location = new Location("app");
-	    	 location.setLatitude(lat);
-	    	 location.setLongitude(lng);
-	    	 
-	    	 locations.add(new Entry(name, location));
-	    	 
-	    	 result = c.moveToNext();
-	     }
+
 	     
 	     // add to listview
 	     final class EntryCursorAdapter extends CursorAdapter {
 	    	private LayoutInflater inflater;
 	    	private int layout;
 	    	private int columnIndexName;
+	    	private int columnIndexLat;
+	    	private int columnIndexLng;
 
 			public EntryCursorAdapter(Context context, Cursor c) {
 				super(context, c, 0);
 				inflater = LayoutInflater.from(context);
 				layout = R.layout.view_listitem;
 				columnIndexName = c.getColumnIndexOrThrow(LocationEntry.COLUMN_NAME_NAME);
+				columnIndexLat = c.getColumnIndexOrThrow(LocationEntry.COLUMN_NAME_LATITUDE);
+				columnIndexLng = c.getColumnIndexOrThrow(LocationEntry.COLUMN_NAME_LONGITUDE);
 			}
 
 			@Override
@@ -140,8 +129,27 @@ public class MainActivity extends Activity implements
 				TextView viewText1 = (TextView) view.getTag(R.id.view_listitem_text1);
 				viewText1.setText(cursor.getString(columnIndexName));
 				
+				
 		 		TextView viewText2 = (TextView) view.getTag(R.id.view_listitem_text2);
-		 		viewText2.setText("-");
+		 		
+		 		String strInfo = "";
+		 		DecimalFormat fmtKm = new DecimalFormat("0.00");
+	 			if (lastLocation != null) {
+	 				Location dest = new Location("app");
+	 				dest.setLatitude(cursor.getDouble(columnIndexLat));
+	 				dest.setLongitude(cursor.getDouble(columnIndexLng));
+	 				
+	 				float d = lastLocation.distanceTo(dest);
+
+	 				if (d < 1000) {
+	 					strInfo = Math.round(d) + " m ";
+	 				} else {
+	 					strInfo = fmtKm.format(d / 1000) + " km";
+	 				}
+	 			} else {
+	 				strInfo = "?";
+	 			}
+	 			viewText2.setText(strInfo);
 			}
 			
 			@Override
@@ -349,36 +357,16 @@ public class MainActivity extends Activity implements
 	 		
 			DecimalFormat fmtLatLng = new DecimalFormat("0.00000");
 	 		String strLatLng = fmtLatLng.format(lat) + "," + fmtLatLng.format(lng);
-	 		//strLatLng += "\n(" + location.getProvider() + ")";
 	 		textLatLng.setText(strLatLng);
 		} else {
 			textLatLng.setText(R.string.latlng_unknown);
 		}
 		
-		///////////////////////////////////
-		String strInfo = "";
-		DecimalFormat fmtKm = new DecimalFormat("0.00");
-		for (Entry entry: locations) {
-			if (location != null) {
-				float d = location.distanceTo(entry.getLocation());
-				
-				if (d < 1000) {
-					strInfo = Math.round(d) + " m ";
-				} else {
-					strInfo = fmtKm.format(d / 1000) + " km";
-				}
-			} else {
-				strInfo = "?";
-			}
-			
-			View view = listLocations.findViewWithTag(entry.getName());
-			if (view != null) {
-				TextView textview = (TextView) view.getTag(R.id.view_listitem_text2);
-				textview.setText(strInfo);
-			} else {
-				Toast.makeText(this, "List items not present.", Toast.LENGTH_SHORT).show();
-			}
-		}
+		// remember last position
+		lastLocation = location;
+		
+		// force list view to update
+		((BaseAdapter) listLocations.getAdapter()).notifyDataSetChanged();
 	}
 
 
