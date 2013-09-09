@@ -56,6 +56,7 @@ public class LocationEntryDbHelper extends SQLiteOpenHelper {
 			return null;
 		}
 		
+		// FIXME: use column-mapping
 		return new Entry(c.getInt(0), c.getString(1), c.getDouble(2), c.getDouble(3));
 	}
 	

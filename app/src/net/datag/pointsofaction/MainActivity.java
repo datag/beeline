@@ -12,11 +12,14 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -171,6 +174,8 @@ public class MainActivity extends Activity implements
 	     };
 		 
 	     listLocations.setAdapter(new EntryCursorAdapter(this, c));
+	     
+	     registerForContextMenu(listLocations);
 	}
 
 	@Override
@@ -218,7 +223,7 @@ public class MainActivity extends Activity implements
 			openNewEntry();
 			return true;
 		case R.id.action_settings:
-			Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, "TODO: settings.", Toast.LENGTH_SHORT).show();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -357,12 +362,24 @@ public class MainActivity extends Activity implements
 		((CursorAdapter) listLocations.getAdapter()).notifyDataSetChanged();
 	}
 
-	
-	public void onEntryClick(View view) {
-		int id = ((Integer) view.getTag()).intValue();
-		Toast.makeText(this, "CLICK item #" + id, Toast.LENGTH_SHORT).show();
-		
-		openEntry(id);
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		getMenuInflater().inflate(R.menu.context_menu, menu);
 	}
 
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+	    switch (item.getItemId()) {
+	        case R.id.action_edit:
+	        	openEntry((int) info.id);
+	            return true;
+	        case R.id.action_delete:
+	        	Toast.makeText(this, "TODO: delete item #" + info.id, Toast.LENGTH_SHORT).show();
+	            return true;
+	        default:
+	            return super.onContextItemSelected(item);
+	    }
+	}
 }

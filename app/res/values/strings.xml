@@ -13,5 +13,6 @@
     <string name="action_save">Save</string>
     <string name="error_empty_name">No name given.</string>
     <string name="error_saving_entry">Error saving entry.</string>
-
+	<string name="action_edit">Edit</string>
+	<string name="action_delete">Delete</string>
 </resources>

@@ -104,12 +104,12 @@ public class EntryActivity extends Activity {
 		Entry entry = dbHelper.new Entry(id, name, lat, lng);
 		
 		if (entry.name.trim().isEmpty()) {
-			Toast.makeText(this, "No name given.", Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, R.string.error_empty_name, Toast.LENGTH_SHORT).show();
 			return false;
 		}
 		
 		if (dbHelper.save(entry) != true) {
-			Toast.makeText(this, "Error saving to database.", Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, R.string.error_saving_entry, Toast.LENGTH_SHORT).show();
 			return false;
 		}
 		
