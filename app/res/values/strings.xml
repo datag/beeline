@@ -10,5 +10,6 @@
     <string name="hint_name">Location title</string>
     <string name="label_latitude">Latitude:</string>
     <string name="label_longitude">Longitude:</string>
+    <string name="action_save">Save</string>
 
 </resources>

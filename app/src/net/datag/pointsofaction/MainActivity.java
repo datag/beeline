@@ -37,6 +37,7 @@ public class MainActivity extends Activity implements
 		GooglePlayServicesClient.ConnectionCallbacks,
 		GooglePlayServicesClient.OnConnectionFailedListener {
 
+	private final static int ENTRY_ACTION_REQUEST = 100;
 	private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 	
     private static final int UPDATE_INTERVAL = 5000;
@@ -283,22 +284,35 @@ public class MainActivity extends Activity implements
 
     private void openNewEntry() {
     	Intent intent = new Intent(this, EntryActivity.class);
-    	startActivity(intent);
+    	
+    	Bundle extra = new Bundle();
+    	extra.putBoolean("create", true);
+    	extra.putBoolean("useLocation", lastLocation != null);
+    	extra.putDouble("latitude", lastLocation != null ? lastLocation.getLatitude() : null);
+    	extra.putDouble("longitude", lastLocation != null ? lastLocation.getLongitude() : null);
+    	
+    	intent.putExtra(EntryActivity.EXTRA_ENTRY_DETAILS, extra);
+    	startActivityForResult(intent, ENTRY_ACTION_REQUEST);
 	}
 
 	@Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case CONNECTION_FAILURE_RESOLUTION_REQUEST:
-                switch (resultCode) {
-                case Activity.RESULT_OK :
-                    // TODO: retry request
+            	if (resultCode == RESULT_OK) {
                 	Toast.makeText(this, "Resolution now ok, could retry now.", Toast.LENGTH_SHORT).show();
-                    break;
-                default:
+            	} else {
                 	Toast.makeText(this, "Resolution failed.", Toast.LENGTH_SHORT).show();
                 }
                 break;
+            case ENTRY_ACTION_REQUEST:
+            	if (resultCode == RESULT_OK) {
+            		Toast.makeText(this, "entry action; resultCode=" + resultCode, Toast.LENGTH_SHORT).show();
+            		System.out.println("entry action; resultCode=" + resultCode + " data=" + (data != null ? data.toString() : "NULL"));
+            	} else {
+            		Toast.makeText(this, "entry action FAILED; resultCode=" + resultCode, Toast.LENGTH_SHORT).show();
+            	}
+            	break;
             default:
             	Toast.makeText(this, "Unknown activity result.", Toast.LENGTH_SHORT).show();
         }
