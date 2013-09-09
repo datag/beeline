@@ -1,9 +1,10 @@
 package net.datag.pointsofaction;
 
 import net.datag.pointsofaction.LocationEntryContract.LocationEntry;
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class LocationEntryDbHelper extends SQLiteOpenHelper {
@@ -13,7 +14,6 @@ public class LocationEntryDbHelper extends SQLiteOpenHelper {
     private static final String SQL_CREATE_ENTRIES =
         "CREATE TABLE " + LocationEntry.TABLE_NAME + " (" +
         		LocationEntry._ID + " INTEGER PRIMARY KEY," +
-        		//LocationEntry.COLUMN_NAME_ENTRY_ID + " INTEGER," +
         		LocationEntry.COLUMN_NAME_NAME + " TEXT," +
         		LocationEntry.COLUMN_NAME_LATITUDE + " REAL," +
         		LocationEntry.COLUMN_NAME_LONGITUDE + " REAL" +
@@ -38,4 +38,57 @@ public class LocationEntryDbHelper extends SQLiteOpenHelper {
         onCreate(db);
 	}
 
+	public Entry find(int id) {
+		SQLiteDatabase db = this.getReadableDatabase();
+		
+		String[] columns = new String[] {
+			LocationEntry._ID,
+			LocationEntry.COLUMN_NAME_NAME,
+			LocationEntry.COLUMN_NAME_LATITUDE,
+			LocationEntry.COLUMN_NAME_LONGITUDE
+		};
+		
+		Cursor c = db.query(LocationEntry.TABLE_NAME, columns,
+				LocationEntry._ID + " = ?", new String[] {String.valueOf(id)},
+				null, null, null, "1");
+		
+		if (c.moveToFirst() == false) {
+			return null;
+		}
+		
+		return new Entry(c.getInt(0), c.getString(1), c.getDouble(2), c.getDouble(3));
+	}
+	
+	public boolean save(Entry entry) {
+		SQLiteDatabase db = this.getWritableDatabase();
+		
+		ContentValues values = new ContentValues();
+		values.put(LocationEntry.COLUMN_NAME_NAME, entry.name);
+		values.put(LocationEntry.COLUMN_NAME_LATITUDE, entry.latitude);
+		values.put(LocationEntry.COLUMN_NAME_LONGITUDE, entry.longitude);
+		
+		boolean result;
+		
+		if (entry.id != 0) {
+			result = db.update(LocationEntry.TABLE_NAME, values, LocationEntry._ID + " = ?", new String[] {String.valueOf(entry.id)}) >= 0;
+		} else {
+			result = db.insert(LocationEntry.TABLE_NAME, null, values) != -1;
+		}
+		
+		return result;
+	}
+	
+	final public class Entry {
+		public int id;
+		public String name;
+		public double latitude;
+		public double longitude;
+
+		public Entry(int id, String name, double latitude, double longitude) {
+			this.id = id;
+			this.name = name;
+			this.latitude = latitude;
+			this.longitude = longitude;
+		}
+	}
 }

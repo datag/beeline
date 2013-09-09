@@ -2,6 +2,7 @@ package net.datag.pointsofaction;
 
 import java.text.DecimalFormat;
 
+import net.datag.pointsofaction.LocationEntryDbHelper.Entry;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
@@ -9,11 +10,13 @@ import android.support.v4.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.Toast;
 
 
 public class EntryActivity extends Activity {
 	public final static String EXTRA_ENTRY_DETAILS = "net.datag.pointsofaction.EntryDetails";
 	
+	private int id;
 	private EditText editName;
 	private EditText editLatitude;
 	private EditText editLongitude;
@@ -29,18 +32,29 @@ public class EntryActivity extends Activity {
 		editLatitude = (EditText) findViewById(R.id.edit_latitude);
 		editLongitude = (EditText) findViewById(R.id.edit_longitude);
 		
+		
 		// extract intent data
 		Intent intent = getIntent();
 		Bundle bundle = intent.getBundleExtra(EXTRA_ENTRY_DETAILS);
 		
+		DecimalFormat fmtLatLng = new DecimalFormat("0.00000");
+		
 		if (bundle.getBoolean("create") == true) {
+			id = 0;
+			
 			if (bundle.getBoolean("useLocation")) {
-				DecimalFormat fmtLatLng = new DecimalFormat("0.00000");
 				editLatitude.setText(fmtLatLng.format(bundle.getDouble("latitude")));
 				editLongitude.setText(fmtLatLng.format(bundle.getDouble("longitude")));
 			}
 		} else {
-			editName.setText("EDIT");
+			id = bundle.getInt("id");
+			
+			LocationEntryDbHelper dbHelper = new LocationEntryDbHelper(this);
+			Entry entry = dbHelper.find(id);
+			
+			editName.setText(entry.name);
+			editLatitude.setText(fmtLatLng.format(entry.latitude));
+			editLongitude.setText(fmtLatLng.format(entry.longitude));
 		}
 	}
 
@@ -72,16 +86,34 @@ public class EntryActivity extends Activity {
 			NavUtils.navigateUpFromSameTask(this);
 			return true;
 		case R.id.action_save:
-			Bundle bundle = new Bundle();
-			bundle.putString("foo", "bar");
-			
-			Intent intent = new Intent();
-			intent.putExtras(bundle);
-			setResult(RESULT_OK, intent);
-			finish();
-			break;
+			if (save() == true) {
+				setResult(RESULT_OK);
+				finish();				
+			}
+			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+	
+	protected boolean save() {
+		String name = editName.getText().toString();
+		double lat = Double.valueOf(editLatitude.getText().toString());
+		double lng = Double.valueOf(editLongitude.getText().toString());
+		
+		LocationEntryDbHelper dbHelper = new LocationEntryDbHelper(this);
+		Entry entry = dbHelper.new Entry(id, name, lat, lng);
+		
+		if (entry.name.trim().isEmpty()) {
+			Toast.makeText(this, "No name given.", Toast.LENGTH_SHORT).show();
+			return false;
+		}
+		
+		if (dbHelper.save(entry) != true) {
+			Toast.makeText(this, "Error saving to database.", Toast.LENGTH_SHORT).show();
+			return false;
+		}
+		
+		return true;
 	}
 
 }

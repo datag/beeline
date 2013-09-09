@@ -14,6 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
+        android:layout_marginBottom="10dp"
         android:text="@string/latlng_unknown"
         android:textColor="#33cc33"
         android:textSize="24sp"

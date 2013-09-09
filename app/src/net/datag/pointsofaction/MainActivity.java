@@ -18,7 +18,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -76,9 +75,9 @@ public class MainActivity extends Activity implements
         initListView();
 	}
 	
-	protected void initListView() {
-        LocationEntryDbHelper mDbHelper = new LocationEntryDbHelper(this);
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+	protected Cursor queryEntries() {
+		LocationEntryDbHelper dbHelper = new LocationEntryDbHelper(this);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
 
 
 	     // Define a projection that specifies which columns from the database
@@ -103,7 +102,12 @@ public class MainActivity extends Activity implements
 	         null,                                     // don't filter by row groups
 	         sortOrder                                 // The sort order
 	         );
-
+	     
+	     return c;
+	}
+	
+	protected void initListView() {
+         Cursor c = queryEntries();
 	     
 	     // add to listview
 	     final class EntryCursorAdapter extends CursorAdapter {
@@ -155,7 +159,8 @@ public class MainActivity extends Activity implements
 				View view = inflater.inflate(layout, parent, false);
 				
 				// set tag
-				view.setTag(cursor.getString(columnIndexName));
+				int id = cursor.getInt(cursor.getColumnIndexOrThrow(LocationEntry._ID));
+				view.setTag(Integer.valueOf(id));
 				
 				view.setTag(R.id.view_listitem_text1, view.findViewById(R.id.view_listitem_text1));
 				view.setTag(R.id.view_listitem_text2, view.findViewById(R.id.view_listitem_text2));
@@ -163,8 +168,7 @@ public class MainActivity extends Activity implements
 				bindView(view, context, cursor);
 				
 				return view;
-			}
-	    	 
+			} 
 	     };
 		 
 	     listLocations.setAdapter(new EntryCursorAdapter(this, c));
@@ -190,8 +194,8 @@ public class MainActivity extends Activity implements
 		};
 		
 		try {
-			LocationEntryDbHelper mDbHelper = new LocationEntryDbHelper(this);
-			SQLiteDatabase db = mDbHelper.getWritableDatabase();
+			LocationEntryDbHelper dbHelper = new LocationEntryDbHelper(this);
+			SQLiteDatabase db = dbHelper.getWritableDatabase();
 			
 			for (TestEntry entry: entries) {
 				// Create a new map of values, where column names are the keys
@@ -209,24 +213,6 @@ public class MainActivity extends Activity implements
         	System.out.println(e.getMessage());
         }
 	}
-	
-//	final private class Entry {
-//		private String name;
-//		private Location location;
-//		
-//		public Entry(String name, Location location) {
-//			this.name = name;
-//			this.location = location;
-//		}
-//		
-//		public String getName() {
-//			return name;
-//		}
-//		
-//		public Location getLocation() {
-//			return location;
-//		}
-//	};
 
 	@Override
 	protected void onStart() {
@@ -295,6 +281,17 @@ public class MainActivity extends Activity implements
     	intent.putExtra(EntryActivity.EXTRA_ENTRY_DETAILS, extra);
     	startActivityForResult(intent, ENTRY_ACTION_REQUEST);
 	}
+    
+    private void openEntry(int id) {
+    	Intent intent = new Intent(this, EntryActivity.class);
+    	
+    	Bundle extra = new Bundle();
+    	extra.putBoolean("create", false);
+    	extra.putInt("id", id);
+    	
+    	intent.putExtra(EntryActivity.EXTRA_ENTRY_DETAILS, extra);
+    	startActivityForResult(intent, ENTRY_ACTION_REQUEST);
+	}
 
 	@Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -310,8 +307,10 @@ public class MainActivity extends Activity implements
             	if (resultCode == RESULT_OK) {
             		Toast.makeText(this, "entry action; resultCode=" + resultCode, Toast.LENGTH_SHORT).show();
             		System.out.println("entry action; resultCode=" + resultCode + " data=" + (data != null ? data.toString() : "NULL"));
-            	} else {
-            		Toast.makeText(this, "entry action FAILED; resultCode=" + resultCode, Toast.LENGTH_SHORT).show();
+            		
+            		// refresh
+            		Cursor c = queryEntries();
+            		((CursorAdapter) listLocations.getAdapter()).changeCursor(c);
             	}
             	break;
             default:
@@ -399,9 +398,15 @@ public class MainActivity extends Activity implements
 		lastLocation = location;
 		
 		// force list view to update
-		((BaseAdapter) listLocations.getAdapter()).notifyDataSetChanged();
+		((CursorAdapter) listLocations.getAdapter()).notifyDataSetChanged();
 	}
 
-
+	
+	public void onEntryClick(View view) {
+		int id = ((Integer) view.getTag()).intValue();
+		Toast.makeText(this, "CLICK item #" + id, Toast.LENGTH_SHORT).show();
+		
+		openEntry(id);
+	}
 
 }
