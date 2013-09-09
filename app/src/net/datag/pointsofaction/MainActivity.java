@@ -126,21 +126,19 @@ public class MainActivity extends Activity implements
 	     final class EntryCursorAdapter extends CursorAdapter {
 	    	private LayoutInflater inflater;
 	    	private int layout;
+	    	private int columnIndexName;
 
 			public EntryCursorAdapter(Context context, Cursor c) {
 				super(context, c, 0);
 				inflater = LayoutInflater.from(context);
 				layout = R.layout.view_listitem;
+				columnIndexName = c.getColumnIndexOrThrow(LocationEntry.COLUMN_NAME_NAME);
 			}
 
 			@Override
 			public void bindView(View view, Context context, Cursor cursor) {
-				int columnIndex = cursor.getColumnIndexOrThrow(LocationEntry.COLUMN_NAME_NAME);
-				String name = cursor.getString(columnIndex);
-				view.setTag(name);	// set view tag
-				
 				TextView viewText1 = (TextView) view.getTag(R.id.view_listitem_text1);
-				viewText1.setText(name);
+				viewText1.setText(cursor.getString(columnIndexName));
 				
 		 		TextView viewText2 = (TextView) view.getTag(R.id.view_listitem_text2);
 		 		viewText2.setText("-");
@@ -149,6 +147,9 @@ public class MainActivity extends Activity implements
 			@Override
 			public View newView(Context context, Cursor cursor, ViewGroup parent) {
 				View view = inflater.inflate(layout, parent, false);
+				
+				// set tag
+				view.setTag(cursor.getString(columnIndexName));
 				
 				view.setTag(R.id.view_listitem_text1, view.findViewById(R.id.view_listitem_text1));
 				view.setTag(R.id.view_listitem_text2, view.findViewById(R.id.view_listitem_text2));
@@ -372,7 +373,7 @@ public class MainActivity extends Activity implements
 			
 			View view = listLocations.findViewWithTag(entry.getName());
 			if (view != null) {
-				TextView textview = (TextView) view.findViewById(R.id.view_listitem_text2);
+				TextView textview = (TextView) view.getTag(R.id.view_listitem_text2);
 				textview.setText(strInfo);
 			} else {
 				Toast.makeText(this, "List items not present.", Toast.LENGTH_SHORT).show();
