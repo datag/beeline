@@ -14,16 +14,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
+        android:text="@string/latlng_unknown"
         android:textColor="#33cc33"
         android:textSize="24sp"
-        android:fontFamily="Droid Sans Mono"
-        android:text="@string/latlng_unknown" />
+        android:typeface="monospace" />
     
     <TextView
         android:id="@+id/text_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="right"
-        android:text="info_panel" />
+        android:text="info_panel"
+        android:typeface="monospace" />
 
 </LinearLayout>
