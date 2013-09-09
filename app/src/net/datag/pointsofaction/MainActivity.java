@@ -1,6 +1,8 @@
 package net.datag.pointsofaction;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -32,8 +34,10 @@ public class MainActivity extends Activity implements
     LocationRequest mLocationRequest;
     LocationClient mLocationClient;
     
-    
 	private TextView textLatLng;
+	private TextView textInfo;
+	private List<Location> locations = new ArrayList<Location>();
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +45,7 @@ public class MainActivity extends Activity implements
 		setContentView(R.layout.activity_main);
 		
 		textLatLng = (TextView) findViewById(R.id.text_latlng);
+		textInfo = (TextView) findViewById(R.id.text_info);
 		
 		// configure location request
 		mLocationRequest = LocationRequest.create();
@@ -50,14 +55,32 @@ public class MainActivity extends Activity implements
         
         // initialize location client
         mLocationClient = new LocationClient(this, this, this);
+        
+        ///////////////////////////////////
+        Location locationTest;
+        String provider = "app";
+
+        // Parent home
+        locationTest = new Location(provider);
+        locationTest.setLatitude(47.99843);
+        locationTest.setLongitude(10.78052);
+        locations.add(locationTest);
+
+        // Work
+        locationTest = new Location(provider);
+        locationTest.setLatitude(48.03301);
+        locationTest.setLongitude(10.73231);
+        locations.add(locationTest);
+        ///////////////////////////////////
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
 		
-		// reset lat/lng
+		// reset UI
 		textLatLng.setText(R.string.latlng_unknown);
+		textInfo.setText("");
 		
 		// connect location client on start
 		mLocationClient.connect();
@@ -164,5 +187,18 @@ public class MainActivity extends Activity implements
 		DecimalFormat fmt = new DecimalFormat("0.00000");
  		String strLatLng = fmt.format(lat) + "," + fmt.format(lng);
  		textLatLng.setText(strLatLng);
+
+		///////////////////////////////////
+		String strInfo = "";
+		for (Location l: locations) {
+			float d = location.distanceTo(l);
+			
+			if (d < 1000) {
+				strInfo += Math.round(d) + " m\n";
+			} else {
+				strInfo += fmt.format(d / 1000) + " km\n";
+			}
+		}
+		textInfo.setText(strInfo);
 	}
 }

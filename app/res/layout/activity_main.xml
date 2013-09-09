@@ -18,5 +18,12 @@
         android:textSize="24sp"
         android:fontFamily="Droid Sans Mono"
         android:text="@string/latlng_unknown" />
+    
+    <TextView
+        android:id="@+id/text_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:text="info_panel" />
 
 </LinearLayout>
