@@ -18,6 +18,13 @@
         android:textColor="#33cc33"
         android:textSize="24sp"
         android:typeface="monospace" />
+
+    <Button
+        android:id="@+id/button_test"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Test"
+        android:onClick="doTest" />
     
     <TextView
         android:id="@+id/text_info"
@@ -26,5 +33,13 @@
         android:gravity="right"
         android:text="info_panel"
         android:typeface="monospace" />
+
+    <ListView
+        android:id="@+id/list_locations"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:headerDividersEnabled="true" >
+
+    </ListView>
 
 </LinearLayout>

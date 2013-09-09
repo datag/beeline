@@ -4,13 +4,20 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.datag.pointsofaction.LocationEntryContract.LocationEntry;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.View;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +44,9 @@ public class MainActivity extends Activity implements
     
 	private TextView textLatLng;
 	private TextView textInfo;
+	private ListView listLocations;
+	
+	SimpleCursorAdapter mAdapter;
 	private List<Location> locations = new ArrayList<Location>();
 
 
@@ -47,6 +57,8 @@ public class MainActivity extends Activity implements
 		
 		textLatLng = (TextView) findViewById(R.id.text_latlng);
 		textInfo = (TextView) findViewById(R.id.text_info);
+		listLocations = (ListView) findViewById(R.id.list_locations);
+		
 		
 		// configure location request
 		mLocationRequest = LocationRequest.create();
@@ -58,28 +70,84 @@ public class MainActivity extends Activity implements
         // initialize location client
         mLocationClient = new LocationClient(this, this, this);
         
-        ///////////////////////////////////
-        Location locationTest;
-        String provider = "app";
-        
-        // Home
-        locationTest = new Location(provider);
-        locationTest.setLatitude(48.03503);
-        locationTest.setLongitude(10.73138);
-        locations.add(locationTest);
-        
-        // Parent home
-        locationTest = new Location(provider);
-        locationTest.setLatitude(47.99843);
-        locationTest.setLongitude(10.78052);
-        locations.add(locationTest);
+        initListView();
+	}
+	
+	protected void initListView() {
+        LocationEntryDbHelper mDbHelper = new LocationEntryDbHelper(this);
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
-        // Work
-        locationTest = new Location(provider);
-        locationTest.setLatitude(48.03301);
-        locationTest.setLongitude(10.73231);
-        locations.add(locationTest);
-        ///////////////////////////////////
+
+	     // Define a projection that specifies which columns from the database
+	     // you will actually use after this query.
+	     String[] projection = {
+	    		 LocationEntry._ID,
+	    		 LocationEntry.COLUMN_NAME_NAME,
+	    		 LocationEntry.COLUMN_NAME_LATITUDE,
+	    		 LocationEntry.COLUMN_NAME_LONGITUDE
+	     };
+	     
+	     // How you want the results sorted in the resulting Cursor
+	     String sortOrder =
+	    		 LocationEntry.COLUMN_NAME_NAME + " DESC";
+	
+	     Cursor c = db.query(
+	         LocationEntry.TABLE_NAME,  // The table to query
+	         projection,                               // The columns to return
+	         null /*selection*/,                                // The columns for the WHERE clause
+	         null /*selectionArgs*/,                            // The values for the WHERE clause
+	         null,                                     // don't group the rows
+	         null,                                     // don't filter by row groups
+	         sortOrder                                 // The sort order
+	         );
+        
+	  
+	     
+	     SimpleCursorAdapter adapter = new SimpleCursorAdapter(this, R.layout.view_listitem,
+	    		 	c, new String[] {LocationEntry.COLUMN_NAME_NAME, LocationEntry.COLUMN_NAME_LATITUDE}, new int[] { R.id.view_listitem_text1, R.id.view_listitem_text2 }, 0);
+
+	    	
+	     listLocations.setAdapter(adapter);
+	}
+	
+	public void doTest(View view) {
+		class Entry {
+			public String name;
+			public double lat;
+			public double lng;
+			
+			public Entry(String name, double lat, double lng) {
+				this.name = name;
+				this.lat = lat;
+				this.lng = lng;
+			}
+		};
+		
+		Entry[] entries = {
+			new Entry("Home", 48.03504, 10.73137),
+			new Entry("Parents", 47.99843, 10.78052),
+			new Entry("Work", 48.03301, 10.73231)
+		};
+		
+		try {
+			LocationEntryDbHelper mDbHelper = new LocationEntryDbHelper(this);
+			SQLiteDatabase db = mDbHelper.getWritableDatabase();
+			
+			for (Entry entry: entries) {
+				// Create a new map of values, where column names are the keys
+				ContentValues values = new ContentValues();
+				values.put(LocationEntry.COLUMN_NAME_NAME, entry.name);
+				values.put(LocationEntry.COLUMN_NAME_LATITUDE, entry.lat);
+				values.put(LocationEntry.COLUMN_NAME_LONGITUDE, entry.lng);
+				
+				// Insert the new row, returning the primary key value of the new row
+				long newRowId = db.insert(LocationEntry.TABLE_NAME, null, values);
+			}
+        
+		} catch (Exception e) {
+        	Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+        	System.out.println(e.getMessage());
+        }
 	}
 
 	@Override
@@ -108,10 +176,6 @@ public class MainActivity extends Activity implements
 	@Override
 	protected void onResume() {
 		super.onResume();
-		
-		// reset UI
-		textLatLng.setText(R.string.latlng_unknown);
-		textInfo.setText("");
 		
 		// connect location client on start
 		mLocationClient.connect();
@@ -182,6 +246,11 @@ public class MainActivity extends Activity implements
 	@Override
 	public void onConnected(Bundle bundle) {
 		Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
+		
+		// one-shot update
+		updateLocations(mLocationClient.getLastLocation());
+		
+		// request periodic updates
 		mLocationClient.requestLocationUpdates(mLocationRequest, this);
 	}
 
@@ -197,26 +266,42 @@ public class MainActivity extends Activity implements
                 Double.toString(location.getLongitude());
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
         
-        
+		updateLocations(location);
+	}
+	
+	protected void updateLocations(Location location) {
         // display location as latitude/longitude
-        double lat = location.getLatitude();
- 		double lng = location.getLongitude();
- 		
-		DecimalFormat fmt = new DecimalFormat("0.00000");
- 		String strLatLng = fmt.format(lat) + "," + fmt.format(lng);
- 		textLatLng.setText(strLatLng);
-
+		if (location != null) {
+	        double lat = location.getLatitude();
+	 		double lng = location.getLongitude();
+	 		
+			DecimalFormat fmtLatLng = new DecimalFormat("0.00000");
+	 		String strLatLng = fmtLatLng.format(lat) + "," + fmtLatLng.format(lng);
+	 		//strLatLng += "\n(" + location.getProvider() + ")";
+	 		textLatLng.setText(strLatLng);
+		} else {
+			textLatLng.setText(R.string.latlng_unknown);
+		}
+		
 		///////////////////////////////////
 		String strInfo = "";
+		DecimalFormat fmtKm = new DecimalFormat("0.00");
 		for (Location l: locations) {
-			float d = location.distanceTo(l);
-			
-			if (d < 1000) {
-				strInfo += Math.round(d) + " m \n";
+			if (location != null) {
+				float d = location.distanceTo(l);
+				
+				if (d < 1000) {
+					strInfo += Math.round(d) + " m \n";
+				} else {
+					strInfo += fmtKm.format(d / 1000) + " km\n";
+				}
 			} else {
-				strInfo += fmt.format(d / 1000) + " km\n";
+				strInfo += "?\n";
 			}
 		}
 		textInfo.setText(strInfo);
 	}
+
+
+
 }
