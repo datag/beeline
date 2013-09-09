@@ -15,11 +15,12 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CursorAdapter;
 import android.widget.ListView;
-import android.widget.ResourceCursorAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -122,41 +123,44 @@ public class MainActivity extends Activity implements
 	     }
 	     
 	     // add to listview
-	     final class EntryCursorAdapter extends ResourceCursorAdapter {
+	     final class EntryCursorAdapter extends CursorAdapter {
+	    	private LayoutInflater inflater;
+	    	private int layout;
 
 			public EntryCursorAdapter(Context context, Cursor c) {
-				super(context, R.layout.view_listitem, c, 0);
+				super(context, c, 0);
+				inflater = LayoutInflater.from(context);
+				layout = R.layout.view_listitem;
 			}
 
 			@Override
 			public void bindView(View view, Context context, Cursor cursor) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public View newView(Context context, Cursor cursor, ViewGroup parent) {
-				View view = super.newView(context, cursor, parent);
-				
 				int columnIndex = cursor.getColumnIndexOrThrow(LocationEntry.COLUMN_NAME_NAME);
 				String name = cursor.getString(columnIndex);
 				view.setTag(name);	// set view tag
 				
-				TextView viewText1 = (TextView) view.findViewById(R.id.view_listitem_text1);
+				TextView viewText1 = (TextView) view.getTag(R.id.view_listitem_text1);
 				viewText1.setText(name);
 				
-				
-		 		TextView viewText2 = (TextView) view.findViewById(R.id.view_listitem_text2);
+		 		TextView viewText2 = (TextView) view.getTag(R.id.view_listitem_text2);
 		 		viewText2.setText("-");
-		 		
+			}
+			
+			@Override
+			public View newView(Context context, Cursor cursor, ViewGroup parent) {
+				View view = inflater.inflate(layout, parent, false);
+				
+				view.setTag(R.id.view_listitem_text1, view.findViewById(R.id.view_listitem_text1));
+				view.setTag(R.id.view_listitem_text2, view.findViewById(R.id.view_listitem_text2));
+				
+				bindView(view, context, cursor);
+				
 				return view;
 			}
 	    	 
 	     };
-		     
-		 EntryCursorAdapter adapter = new EntryCursorAdapter(this, c);
-	     
-	     listLocations.setAdapter(adapter);
+		 
+	     listLocations.setAdapter(new EntryCursorAdapter(this, c));
 	}
 	
 	public void doTest(View view) {
@@ -355,7 +359,7 @@ public class MainActivity extends Activity implements
 		DecimalFormat fmtKm = new DecimalFormat("0.00");
 		for (Entry entry: locations) {
 			if (location != null) {
-				float d = location.distanceTo(entry.location);
+				float d = location.distanceTo(entry.getLocation());
 				
 				if (d < 1000) {
 					strInfo = Math.round(d) + " m ";
@@ -366,9 +370,13 @@ public class MainActivity extends Activity implements
 				strInfo = "?";
 			}
 			
-			View view = listLocations.findViewWithTag(entry.name);
-			TextView textview = (TextView) view.findViewById(R.id.view_listitem_text2);
-			textview.setText(strInfo);
+			View view = listLocations.findViewWithTag(entry.getName());
+			if (view != null) {
+				TextView textview = (TextView) view.findViewById(R.id.view_listitem_text2);
+				textview.setText(strInfo);
+			} else {
+				Toast.makeText(this, "List items not present.", Toast.LENGTH_SHORT).show();
+			}
 		}
 	}
 
