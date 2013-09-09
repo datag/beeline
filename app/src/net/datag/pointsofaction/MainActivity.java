@@ -77,18 +77,16 @@ public class MainActivity extends Activity implements
 	@Override
 	protected void onStart() {
 		super.onStart();
-		
-		// reset UI
-		textLatLng.setText(R.string.latlng_unknown);
-		textInfo.setText("");
-		
-		// connect location client on start
-		mLocationClient.connect();
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
 		
 		// unregister updates for location, if connected
 		if (mLocationClient.isConnected()) {
@@ -97,6 +95,18 @@ public class MainActivity extends Activity implements
 		
 		// disconnect the location client
 		mLocationClient.disconnect();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		
+		// reset UI
+		textLatLng.setText(R.string.latlng_unknown);
+		textInfo.setText("");
+		
+		// connect location client on start
+		mLocationClient.connect();
 	}
 
 	@Override
