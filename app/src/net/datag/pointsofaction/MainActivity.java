@@ -48,7 +48,6 @@ public class MainActivity extends Activity implements
     LocationClient mLocationClient;
     
 	private TextView textLatLng;
-	//private TextView textInfo;
 	private ListView listLocations;
 	private Location lastLocation;
 	
@@ -61,7 +60,6 @@ public class MainActivity extends Activity implements
 		setContentView(R.layout.activity_main);
 		
 		textLatLng = (TextView) findViewById(R.id.text_latlng);
-		//textInfo = (TextView) findViewById(R.id.text_info);
 		listLocations = (ListView) findViewById(R.id.list_locations);
 		
 		
@@ -172,7 +170,7 @@ public class MainActivity extends Activity implements
 	     listLocations.setAdapter(new EntryCursorAdapter(this, c));
 	}
 	
-	public void doTest(View view) {
+	public void testAction() {
 		final class TestEntry {
 			public String name;
 			public double lat;
@@ -273,6 +271,9 @@ public class MainActivity extends Activity implements
 		switch (item.getItemId()) {
 		case R.id.action_new:
 			openNewEntry();
+			return true;
+		case R.id.action_test:
+			testAction();
 			return true;
 		case R.id.action_settings:
 			Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
