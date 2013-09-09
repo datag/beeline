@@ -3,6 +3,6 @@
 
     <string name="app_name">PointsOfAction</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="latlng_unknown">Unknown position</string>
 
 </resources>
