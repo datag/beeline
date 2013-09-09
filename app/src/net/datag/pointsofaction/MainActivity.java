@@ -61,7 +61,13 @@ public class MainActivity extends Activity implements
         ///////////////////////////////////
         Location locationTest;
         String provider = "app";
-
+        
+        // Home
+        locationTest = new Location(provider);
+        locationTest.setLatitude(48.03503);
+        locationTest.setLongitude(10.73138);
+        locations.add(locationTest);
+        
         // Parent home
         locationTest = new Location(provider);
         locationTest.setLatitude(47.99843);
@@ -206,7 +212,7 @@ public class MainActivity extends Activity implements
 			float d = location.distanceTo(l);
 			
 			if (d < 1000) {
-				strInfo += Math.round(d) + " m\n";
+				strInfo += Math.round(d) + " m \n";
 			} else {
 				strInfo += fmt.format(d / 1000) + " km\n";
 			}
