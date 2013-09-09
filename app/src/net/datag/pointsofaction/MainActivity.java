@@ -1,8 +1,6 @@
 package net.datag.pointsofaction;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 import net.datag.pointsofaction.LocationEntryContract.LocationEntry;
 import android.app.Activity;
@@ -17,6 +15,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -37,8 +36,8 @@ public class MainActivity extends Activity implements
 		LocationListener,
 		GooglePlayServicesClient.ConnectionCallbacks,
 		GooglePlayServicesClient.OnConnectionFailedListener {
-	
-    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+
+	private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 	
     private static final int UPDATE_INTERVAL = 5000;
     private static final int FASTEST_INTERVAL = 1000;
@@ -94,7 +93,7 @@ public class MainActivity extends Activity implements
 	     
 	     // How you want the results sorted in the resulting Cursor
 	     String sortOrder =
-	    		 LocationEntry.COLUMN_NAME_NAME + " DESC";
+	    		 LocationEntry.COLUMN_NAME_NAME + " ASC";
 	
 	     Cursor c = db.query(
 	         LocationEntry.TABLE_NAME,  // The table to query
@@ -212,23 +211,23 @@ public class MainActivity extends Activity implements
         }
 	}
 	
-	final private class Entry {
-		private String name;
-		private Location location;
-		
-		public Entry(String name, Location location) {
-			this.name = name;
-			this.location = location;
-		}
-		
-		public String getName() {
-			return name;
-		}
-		
-		public Location getLocation() {
-			return location;
-		}
-	};
+//	final private class Entry {
+//		private String name;
+//		private Location location;
+//		
+//		public Entry(String name, Location location) {
+//			this.name = name;
+//			this.location = location;
+//		}
+//		
+//		public String getName() {
+//			return name;
+//		}
+//		
+//		public Location getLocation() {
+//			return location;
+//		}
+//	};
 
 	@Override
 	protected void onStart() {
@@ -267,8 +266,27 @@ public class MainActivity extends Activity implements
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.action_new:
+			openNewEntry();
+			return true;
+		case R.id.action_settings:
+			Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
 
-    @Override
+    private void openNewEntry() {
+    	Intent intent = new Intent(this, EntryActivity.class);
+    	startActivity(intent);
+	}
+
+	@Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case CONNECTION_FAILURE_RESOLUTION_REQUEST:
