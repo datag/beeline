@@ -5,7 +5,6 @@ import java.text.DecimalFormat;
 import net.datag.pointsofaction.LocationEntryContract.LocationEntry;
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -173,46 +172,6 @@ public class MainActivity extends Activity implements
 		 
 	     listLocations.setAdapter(new EntryCursorAdapter(this, c));
 	}
-	
-	public void testAction() {
-		final class TestEntry {
-			public String name;
-			public double lat;
-			public double lng;
-			
-			public TestEntry(String name, double lat, double lng) {
-				this.name = name;
-				this.lat = lat;
-				this.lng = lng;
-			}
-		};
-		
-		TestEntry[] entries = {
-			new TestEntry("Home", 48.03504, 10.73137),
-			new TestEntry("Parents", 47.99843, 10.78052),
-			new TestEntry("Work", 48.03301, 10.73231)
-		};
-		
-		try {
-			LocationEntryDbHelper dbHelper = new LocationEntryDbHelper(this);
-			SQLiteDatabase db = dbHelper.getWritableDatabase();
-			
-			for (TestEntry entry: entries) {
-				// Create a new map of values, where column names are the keys
-				ContentValues values = new ContentValues();
-				values.put(LocationEntry.COLUMN_NAME_NAME, entry.name);
-				values.put(LocationEntry.COLUMN_NAME_LATITUDE, entry.lat);
-				values.put(LocationEntry.COLUMN_NAME_LONGITUDE, entry.lng);
-				
-				// Insert the new row, returning the primary key value of the new row
-				/* long newRowId = */ db.insert(LocationEntry.TABLE_NAME, null, values);
-			}
-        
-		} catch (Exception e) {
-        	Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-        	System.out.println(e.getMessage());
-        }
-	}
 
 	@Override
 	protected void onStart() {
@@ -257,9 +216,6 @@ public class MainActivity extends Activity implements
 		switch (item.getItemId()) {
 		case R.id.action_new:
 			openNewEntry();
-			return true;
-		case R.id.action_test:
-			testAction();
 			return true;
 		case R.id.action_settings:
 			Toast.makeText(this, "Not yet implemented.", Toast.LENGTH_SHORT).show();
