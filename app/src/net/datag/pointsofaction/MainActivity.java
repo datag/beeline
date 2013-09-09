@@ -28,8 +28,9 @@ public class MainActivity extends Activity implements
 	
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 	
-    public static final int UPDATE_INTERVAL = 5000;
+    private static final int UPDATE_INTERVAL = 5000;
     private static final int FASTEST_INTERVAL = 1000;
+    private static final float SMALLEST_DISPLACEMENT = 1.0f;
     
     LocationRequest mLocationRequest;
     LocationClient mLocationClient;
@@ -52,6 +53,7 @@ public class MainActivity extends Activity implements
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setInterval(UPDATE_INTERVAL);
         mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
+        mLocationRequest.setSmallestDisplacement(SMALLEST_DISPLACEMENT);
         
         // initialize location client
         mLocationClient = new LocationClient(this, this, this);
