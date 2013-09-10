@@ -1,13 +1,11 @@
 package net.datag.pointsofaction;
 
-import java.text.DecimalFormat;
 import java.text.ParseException;
 
 import net.datag.pointsofaction.LocationEntryDbHelper.Entry;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
-import android.support.v4.app.NavUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -84,9 +82,8 @@ public class EntryActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case android.R.id.home:
-			// navigate one level up
-			NavUtils.navigateUpFromSameTask(this);
-			return true;
+			// handle by framework
+			return false;
 		case R.id.action_save:
 			if (save() == true) {
 				setResult(RESULT_OK);
