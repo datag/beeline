@@ -2,3 +2,5 @@ gen/
 bin/
 .project
 .classpath
+local.properties
+ant.properties
