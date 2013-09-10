@@ -1,8 +1,8 @@
-package net.datag.pointsofaction;
+package net.datag.beeline;
 
 import java.text.ParseException;
 
-import net.datag.pointsofaction.LocationEntryDbHelper.Entry;
+import net.datag.beeline.LocationEntryDbHelper.Entry;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
@@ -13,7 +13,7 @@ import android.widget.Toast;
 
 
 public class EntryActivity extends Activity {
-	public static final String EXTRA_ENTRY_DETAILS = "net.datag.pointsofaction.EntryDetails";
+	public static final String EXTRA_ENTRY_DETAILS = "net.datag.beeline.EntryDetails";
 	
 	private Integer idEntry;
 	private EditText editName;

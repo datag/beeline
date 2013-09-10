@@ -1,4 +1,4 @@
-package net.datag.pointsofaction;
+package net.datag.beeline;
 
 import java.text.DecimalFormat;
 import java.text.ParseException;

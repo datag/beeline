@@ -1,6 +1,6 @@
-package net.datag.pointsofaction;
+package net.datag.beeline;
 
-import net.datag.pointsofaction.LocationEntryContract.LocationEntry;
+import net.datag.beeline.LocationEntryContract.LocationEntry;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;

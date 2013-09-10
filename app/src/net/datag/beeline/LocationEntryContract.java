@@ -1,4 +1,4 @@
-package net.datag.pointsofaction;
+package net.datag.beeline;
 
 import android.provider.BaseColumns;
 
