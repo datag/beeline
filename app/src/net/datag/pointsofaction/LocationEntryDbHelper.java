@@ -33,9 +33,9 @@ public class LocationEntryDbHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		// FIXME
-		db.execSQL(SQL_DELETE_ENTRIES);
-        onCreate(db);
+//		// FIXME
+//		db.execSQL(SQL_DELETE_ENTRIES);
+//        onCreate(db);
 	}
 
 	public Entry find(int id) {
@@ -53,13 +53,14 @@ public class LocationEntryDbHelper extends SQLiteOpenHelper {
 		String limit = "1";
 		
 		Cursor c = db.query(LocationEntry.TABLE_NAME, columns, selection, selectionArgs, null, null, null, limit);
-		
 		if (c.moveToFirst() == false) {
 			return null;
 		}
 		
-		// FIXME: use column-mapping
-		return new Entry(c.getInt(0), c.getString(1), c.getDouble(2), c.getDouble(3));
+		return new Entry(c.getInt(c.getColumnIndex(LocationEntry._ID)),
+				c.getString(c.getColumnIndex(LocationEntry.COLUMN_NAME_NAME)),
+				c.getDouble(c.getColumnIndex(LocationEntry.COLUMN_NAME_LATITUDE)),
+				c.getDouble(c.getColumnIndex(LocationEntry.COLUMN_NAME_LONGITUDE)));
 	}
 	
 	public void save(Entry entry) throws Exception {
@@ -76,8 +77,19 @@ public class LocationEntryDbHelper extends SQLiteOpenHelper {
 			db.update(LocationEntry.TABLE_NAME, values, whereClause, whereArgs);
 		} else {
 			if (db.insert(LocationEntry.TABLE_NAME, null, values) == -1) {
-				throw new Exception("No resulting row for entry insert.");
+				throw new Exception("No rows were inserted.");
 			}
+		}
+	}
+	
+	public void delete(int id) throws Exception {
+		SQLiteDatabase db = this.getWritableDatabase();
+		
+		String whereClause = LocationEntry._ID + " = ?";
+		String[] whereArgs = { String.valueOf(id) };
+		
+		if (db.delete(LocationEntry.TABLE_NAME, whereClause, whereArgs) == 0) {
+			throw new Exception("No rows were deleted.");
 		}
 	}
 	

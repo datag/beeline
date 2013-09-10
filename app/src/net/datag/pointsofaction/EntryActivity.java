@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 
 public class EntryActivity extends Activity {
-	public final static String EXTRA_ENTRY_DETAILS = "net.datag.pointsofaction.EntryDetails";
+	public static final String EXTRA_ENTRY_DETAILS = "net.datag.pointsofaction.EntryDetails";
 	
 	private Integer idEntry;
 	private EditText editName;
@@ -54,10 +54,13 @@ public class EntryActivity extends Activity {
 			
 			LocationEntryDbHelper dbHelper = new LocationEntryDbHelper(this);
 			Entry entry = dbHelper.find(idEntry);
-			
-			editName.setText(entry.name);
-			lat = entry.latitude;
-			lng = entry.longitude;
+			if (entry != null) {
+				editName.setText(entry.name);
+				lat = entry.latitude;
+				lng = entry.longitude;
+			} else {
+				Toast.makeText(this, getResources().getText(R.string.error_entry_not_found), Toast.LENGTH_LONG).show();
+			}
 		}
 		
 		editLatitude.setText(Utilities.geoCoordForInput(lat));

@@ -36,8 +36,8 @@ public class MainActivity extends Activity implements
 		GooglePlayServicesClient.ConnectionCallbacks,
 		GooglePlayServicesClient.OnConnectionFailedListener {
 
-	private final static int ENTRY_ACTION_REQUEST = 100;
-	private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+	private static final int ENTRY_ACTION_REQUEST = 100;
+	private static final int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 	
     private static final int UPDATE_INTERVAL = 5000;
     private static final int FASTEST_INTERVAL = 1000;
@@ -303,7 +303,8 @@ public class MainActivity extends Activity implements
 
 	@Override
 	public void onConnected(Bundle bundle) {
-		Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
+//		Toast.makeText(this, "Connected to location client", Toast.LENGTH_SHORT).show();
+		System.out.println("Connected to location client.");
 		
 		// one-shot update
 		updateLocations(mLocationClient.getLastLocation());
@@ -314,12 +315,13 @@ public class MainActivity extends Activity implements
 
 	@Override
 	public void onDisconnected() {
-		Toast.makeText(this, "Disconnected. Please re-connect.", Toast.LENGTH_SHORT).show();
+//		Toast.makeText(this, "Disconnected from location client", Toast.LENGTH_SHORT).show();
+		System.out.println("Disonnected from location client.");
 	}
 
 	@Override
 	public void onLocationChanged(Location location) {
-		System.out.println("Location has been updated: " +
+		System.out.println("Location has been changed: " +
                 Double.toString(location.getLatitude()) + "," +
                 Double.toString(location.getLongitude()));
         
@@ -355,10 +357,23 @@ public class MainActivity extends Activity implements
 	        	openEntry((int) info.id);
 	            return true;
 	        case R.id.action_delete:
-	        	Toast.makeText(this, "TODO: delete item #" + info.id, Toast.LENGTH_SHORT).show();
+	        	deleteEntry((int) info.id);
 	            return true;
 	        default:
 	            return super.onContextItemSelected(item);
 	    }
+	}
+
+	private void deleteEntry(int id) {
+		try {
+			LocationEntryDbHelper dbHelper = new LocationEntryDbHelper(this);
+			dbHelper.delete(id);
+		} catch (Exception e) {
+			Toast.makeText(this, getResources().getText(R.string.error_deleting_entry) + " " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+		}
+		
+		// refresh
+		Cursor c = queryEntries();
+		((CursorAdapter) listLocations.getAdapter()).changeCursor(c);
 	}
 }

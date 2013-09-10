@@ -11,9 +11,12 @@
     <string name="label_latitude">Latitude:</string>
     <string name="label_longitude">Longitude:</string>
     <string name="action_save">Save</string>
-    <string name="error_latlng_invalid">Latitude/Longitude is not valid: </string>
+    <string name="error_latlng_invalid">Value of latitude/longitude is not valid: </string>
     <string name="error_saving_entry">Error saving entry: </string>
+    <string name="error_deleting_entry">Error deleting entry: </string>
+    <string name="error_entry_not_found">Error: The entry could not be found.</string>
 	<string name="action_edit">Edit</string>
 	<string name="action_delete">Delete</string>
 	<string name="location">Location</string>
+	
 </resources>
