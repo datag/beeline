@@ -48,9 +48,11 @@ public class LocationEntryDbHelper extends SQLiteOpenHelper {
 			LocationEntry.COLUMN_NAME_LONGITUDE
 		};
 		
-		Cursor c = db.query(LocationEntry.TABLE_NAME, columns,
-				LocationEntry._ID + " = ?", new String[] {String.valueOf(id)},
-				null, null, null, "1");
+		String selection = LocationEntry._ID + " = ?";
+		String[] selectionArgs = { String.valueOf(id) };
+		String limit = "1";
+		
+		Cursor c = db.query(LocationEntry.TABLE_NAME, columns, selection, selectionArgs, null, null, null, limit);
 		
 		if (c.moveToFirst() == false) {
 			return null;
@@ -60,7 +62,7 @@ public class LocationEntryDbHelper extends SQLiteOpenHelper {
 		return new Entry(c.getInt(0), c.getString(1), c.getDouble(2), c.getDouble(3));
 	}
 	
-	public boolean save(Entry entry) {
+	public void save(Entry entry) throws Exception {
 		SQLiteDatabase db = this.getWritableDatabase();
 		
 		ContentValues values = new ContentValues();
@@ -68,24 +70,24 @@ public class LocationEntryDbHelper extends SQLiteOpenHelper {
 		values.put(LocationEntry.COLUMN_NAME_LATITUDE, entry.latitude);
 		values.put(LocationEntry.COLUMN_NAME_LONGITUDE, entry.longitude);
 		
-		boolean result;
-		
-		if (entry.id != 0) {
-			result = db.update(LocationEntry.TABLE_NAME, values, LocationEntry._ID + " = ?", new String[] {String.valueOf(entry.id)}) >= 0;
+		if (entry.id != null) {
+			String whereClause = LocationEntry._ID + " = ?";
+			String[] whereArgs = { String.valueOf(entry.id) };
+			db.update(LocationEntry.TABLE_NAME, values, whereClause, whereArgs);
 		} else {
-			result = db.insert(LocationEntry.TABLE_NAME, null, values) != -1;
+			if (db.insert(LocationEntry.TABLE_NAME, null, values) == -1) {
+				throw new Exception("No resulting row for entry insert.");
+			}
 		}
-		
-		return result;
 	}
 	
 	final public class Entry {
-		public int id;
+		public Integer id;
 		public String name;
-		public double latitude;
-		public double longitude;
+		public Double latitude;
+		public Double longitude;
 
-		public Entry(int id, String name, double latitude, double longitude) {
+		public Entry(Integer id, String name, Double latitude, Double longitude) {
 			this.id = id;
 			this.name = name;
 			this.latitude = latitude;

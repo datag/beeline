@@ -1,6 +1,7 @@
 package net.datag.pointsofaction;
 
 import java.text.DecimalFormat;
+import java.text.ParseException;
 
 import net.datag.pointsofaction.LocationEntryDbHelper.Entry;
 import android.os.Bundle;
@@ -16,7 +17,7 @@ import android.widget.Toast;
 public class EntryActivity extends Activity {
 	public final static String EXTRA_ENTRY_DETAILS = "net.datag.pointsofaction.EntryDetails";
 	
-	private int id;
+	private Integer idEntry;
 	private EditText editName;
 	private EditText editLatitude;
 	private EditText editLongitude;
@@ -25,6 +26,7 @@ public class EntryActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_entry);
+		
 		// Show the Up button in the action bar.
 		setupActionBar();
 		
@@ -37,25 +39,29 @@ public class EntryActivity extends Activity {
 		Intent intent = getIntent();
 		Bundle bundle = intent.getBundleExtra(EXTRA_ENTRY_DETAILS);
 		
-		DecimalFormat fmtLatLng = new DecimalFormat("0.00000");
+		double lat = .0;
+		double lng = .0;
 		
 		if (bundle.getBoolean("create") == true) {
-			id = 0;
-			
-			if (bundle.getBoolean("useLocation")) {
-				editLatitude.setText(fmtLatLng.format(bundle.getDouble("latitude")));
-				editLongitude.setText(fmtLatLng.format(bundle.getDouble("longitude")));
+			// new entry
+			if (bundle.getBoolean("useLocation") == true) {
+				lat = bundle.getDouble("latitude");
+				lng = bundle.getDouble("longitude");
 			}
 		} else {
-			id = bundle.getInt("id");
+			// edit entry
+			idEntry = bundle.getInt("id");
 			
 			LocationEntryDbHelper dbHelper = new LocationEntryDbHelper(this);
-			Entry entry = dbHelper.find(id);
+			Entry entry = dbHelper.find(idEntry);
 			
 			editName.setText(entry.name);
-			editLatitude.setText(fmtLatLng.format(entry.latitude));
-			editLongitude.setText(fmtLatLng.format(entry.longitude));
+			lat = entry.latitude;
+			lng = entry.longitude;
 		}
+		
+		editLatitude.setText(Utilities.geoCoordForInput(lat));
+		editLongitude.setText(Utilities.geoCoordForInput(lng));
 	}
 
 	/**
@@ -67,7 +73,6 @@ public class EntryActivity extends Activity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.entry, menu);
 		return true;
 	}
@@ -76,13 +81,7 @@ public class EntryActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case android.R.id.home:
-			// This ID represents the Home or Up button. In the case of this
-			// activity, the Up button is shown. Use NavUtils to allow users
-			// to navigate up one level in the application structure. For
-			// more details, see the Navigation pattern on Android Design:
-			//
-			// http://developer.android.com/design/patterns/navigation.html#up-vs-back
-			//
+			// navigate one level up
 			NavUtils.navigateUpFromSameTask(this);
 			return true;
 		case R.id.action_save:
@@ -97,20 +96,28 @@ public class EntryActivity extends Activity {
 	
 	protected boolean save() {
 		String name = editName.getText().toString();
-		double lat = Double.valueOf(editLatitude.getText().toString());
-		double lng = Double.valueOf(editLongitude.getText().toString());
+		double lat = .0;
+		double lng = .0;
 		
-		LocationEntryDbHelper dbHelper = new LocationEntryDbHelper(this);
-		Entry entry = dbHelper.new Entry(id, name, lat, lng);
-		
-		if (entry.name.trim().isEmpty()) {
-			Toast.makeText(this, R.string.error_empty_name, Toast.LENGTH_SHORT).show();
+		try {
+			lat = Utilities.parseGeoCoord(editLatitude.getText().toString());
+			lng = Utilities.parseGeoCoord(editLongitude.getText().toString());
+		} catch (ParseException e) {
+			Toast.makeText(this, getResources().getText(R.string.error_latlng_invalid) + " " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
 			return false;
 		}
 		
-		if (dbHelper.save(entry) != true) {
-			Toast.makeText(this, R.string.error_saving_entry, Toast.LENGTH_SHORT).show();
-			return false;
+		try {
+			LocationEntryDbHelper dbHelper = new LocationEntryDbHelper(this);
+			Entry entry = dbHelper.new Entry(idEntry, name, lat, lng);
+			
+			if (entry.name.trim().isEmpty()) {
+				entry.name = String.format("%s (%.2f/%.2f)", getResources().getText(R.string.location), lat, lng);
+			}
+			
+			dbHelper.save(entry);
+		} catch (Exception e) {
+			Toast.makeText(this, getResources().getText(R.string.error_saving_entry) + " " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
 		}
 		
 		return true;

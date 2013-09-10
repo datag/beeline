@@ -45,7 +45,8 @@
             android:layout_weight="0.6"
             android:ems="10"
             android:gravity="right"
-            android:inputType="numberDecimal" />
+            android:inputType="number"
+            android:digits="0123456789.," /> <!-- BUG: InputType number/decimals and (German) locale -> Comma as sep is not used; workaround -->
     </LinearLayout>
 
     <LinearLayout
@@ -67,7 +68,8 @@
             android:layout_weight="0.6"
             android:ems="10"
             android:gravity="right"
-            android:inputType="numberDecimal" />
+            android:inputType="number"
+            android:digits="0123456789.," /> <!-- BUG: InputType number/decimals and (German) locale -> Comma as sep is not used; workaround -->
     </LinearLayout>
 
 </LinearLayout>

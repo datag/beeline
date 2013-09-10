@@ -1,7 +1,5 @@
 package net.datag.pointsofaction;
 
-import java.text.DecimalFormat;
-
 import net.datag.pointsofaction.LocationEntryContract.LocationEntry;
 import android.app.Activity;
 import android.app.Dialog;
@@ -111,7 +109,7 @@ public class MainActivity extends Activity implements
 	protected void initListView() {
          Cursor c = queryEntries();
 	     
-	     // add to listview
+	     // add to list-view
 	     final class EntryCursorAdapter extends CursorAdapter {
 	    	private LayoutInflater inflater;
 	    	private int layout;
@@ -137,19 +135,11 @@ public class MainActivity extends Activity implements
 		 		TextView viewText2 = (TextView) view.getTag(R.id.view_listitem_text2);
 		 		
 		 		String strInfo = "";
-		 		DecimalFormat fmtKm = new DecimalFormat("0.00");
 	 			if (lastLocation != null) {
-	 				Location dest = new Location("app");
-	 				dest.setLatitude(cursor.getDouble(columnIndexLat));
-	 				dest.setLongitude(cursor.getDouble(columnIndexLng));
+	 				Location dest = Utilities.lonLat2Location(cursor.getDouble(columnIndexLat), cursor.getDouble(columnIndexLng));
 	 				
 	 				float d = lastLocation.distanceTo(dest);
-
-	 				if (d < 1000) {
-	 					strInfo = Math.round(d) + " m ";
-	 				} else {
-	 					strInfo = fmtKm.format(d / 1000) + " km";
-	 				}
+	 				strInfo = Utilities.formatDistance(d);
 	 			} else {
 	 				strInfo = "?";
 	 			}
@@ -220,7 +210,7 @@ public class MainActivity extends Activity implements
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_new:
-			openNewEntry();
+			openEntry(null);
 			return true;
 		case R.id.action_settings:
 			Toast.makeText(this, "TODO: settings.", Toast.LENGTH_SHORT).show();
@@ -229,26 +219,22 @@ public class MainActivity extends Activity implements
 			return super.onOptionsItemSelected(item);
 		}
 	}
-
-    private void openNewEntry() {
-    	Intent intent = new Intent(this, EntryActivity.class);
-    	
-    	Bundle extra = new Bundle();
-    	extra.putBoolean("create", true);
-    	extra.putBoolean("useLocation", lastLocation != null);
-    	extra.putDouble("latitude", lastLocation != null ? lastLocation.getLatitude() : null);
-    	extra.putDouble("longitude", lastLocation != null ? lastLocation.getLongitude() : null);
-    	
-    	intent.putExtra(EntryActivity.EXTRA_ENTRY_DETAILS, extra);
-    	startActivityForResult(intent, ENTRY_ACTION_REQUEST);
-	}
     
-    private void openEntry(int id) {
+    private void openEntry(Integer id) {
     	Intent intent = new Intent(this, EntryActivity.class);
-    	
     	Bundle extra = new Bundle();
-    	extra.putBoolean("create", false);
-    	extra.putInt("id", id);
+    	
+    	if (id == null) {
+    		extra.putBoolean("create", true);
+        	extra.putBoolean("useLocation", lastLocation != null);
+        	if (lastLocation != null) {
+        		extra.putDouble("latitude", lastLocation.getLatitude());
+        		extra.putDouble("longitude", lastLocation.getLongitude());
+        	}
+    	} else {
+    		extra.putBoolean("create", false);
+    		extra.putInt("id", id);
+    	}
     	
     	intent.putExtra(EntryActivity.EXTRA_ENTRY_DETAILS, extra);
     	startActivityForResult(intent, ENTRY_ACTION_REQUEST);
@@ -266,8 +252,7 @@ public class MainActivity extends Activity implements
                 break;
             case ENTRY_ACTION_REQUEST:
             	if (resultCode == RESULT_OK) {
-            		Toast.makeText(this, "entry action; resultCode=" + resultCode, Toast.LENGTH_SHORT).show();
-            		System.out.println("entry action; resultCode=" + resultCode + " data=" + (data != null ? data.toString() : "NULL"));
+            		System.out.println("entry action; resultCode=" + resultCode);
             		
             		// refresh
             		Cursor c = queryEntries();
@@ -279,22 +264,22 @@ public class MainActivity extends Activity implements
         }
      }
     
-    // should be called before any request
-    private boolean servicesConnected() {
-        // check that Google Play services is available
-        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-        
-        if (ConnectionResult.SUCCESS != resultCode) {
-        	// Google Play services was not available for some reason
-            Dialog errorDialog = GooglePlayServicesUtil.getErrorDialog(resultCode, this, CONNECTION_FAILURE_RESOLUTION_REQUEST);
-            if (errorDialog != null) {
-                errorDialog.show();
-            }
-            return false;
-        }
-        
-        return true;
-    }
+//    // should be called before any request
+//    private boolean servicesConnected() {
+//        // check that Google Play services is available
+//        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+//        
+//        if (ConnectionResult.SUCCESS != resultCode) {
+//        	// Google Play services was not available for some reason
+//            Dialog errorDialog = GooglePlayServicesUtil.getErrorDialog(resultCode, this, CONNECTION_FAILURE_RESOLUTION_REQUEST);
+//            if (errorDialog != null) {
+//                errorDialog.show();
+//            }
+//            return false;
+//        }
+//        
+//        return true;
+//    }
 
 	@Override
 	public void onConnectionFailed(ConnectionResult connectionResult) {
@@ -334,10 +319,9 @@ public class MainActivity extends Activity implements
 
 	@Override
 	public void onLocationChanged(Location location) {
-		String msg = "Location has been updated: " +
+		System.out.println("Location has been updated: " +
                 Double.toString(location.getLatitude()) + "," +
-                Double.toString(location.getLongitude());
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                Double.toString(location.getLongitude()));
         
 		updateLocations(location);
 	}
@@ -345,12 +329,7 @@ public class MainActivity extends Activity implements
 	protected void updateLocations(Location location) {
         // display location as latitude/longitude
 		if (location != null) {
-	        double lat = location.getLatitude();
-	 		double lng = location.getLongitude();
-	 		
-			DecimalFormat fmtLatLng = new DecimalFormat("0.00000");
-	 		String strLatLng = fmtLatLng.format(lat) + "," + fmtLatLng.format(lng);
-	 		textLatLng.setText(strLatLng);
+	 		textLatLng.setText(Utilities.formatLatitudeLongitude(location));
 		} else {
 			textLatLng.setText(R.string.latlng_unknown);
 		}
