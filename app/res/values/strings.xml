@@ -5,6 +5,8 @@
     <string name="action_new">New location</string>
     <string name="action_settings">Settings</string>
     <string name="latlng_unknown">Unknown position</string>
+    <string name="text_latitude">lat (φ)</string>
+    <string name="text_longitude">lon (λ)</string>
     <string name="title_activity_entry">Location</string>
     <string name="label_name">Title:</string>
     <string name="hint_name">Location title</string>

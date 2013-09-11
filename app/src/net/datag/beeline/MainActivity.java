@@ -331,7 +331,11 @@ public class MainActivity extends Activity implements
 	protected void updateLocations(Location location) {
         // display location as latitude/longitude
 		if (location != null) {
-	 		textLatLng.setText(Utilities.formatLatitudeLongitude(location));
+	 		textLatLng.setText(String.format("%s  %s%n%s  %s",
+	 				getResources().getText(R.string.text_latitude),
+	 				Utilities.formatLatLon(location.getLatitude()),
+	 				getResources().getText(R.string.text_longitude),
+	 		 		Utilities.formatLatLon(location.getLongitude())));
 		} else {
 			textLatLng.setText(R.string.latlng_unknown);
 		}

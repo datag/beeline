@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <string name="app_name">Beeline</string>
     <string name="action_new">Neuer Standort</string>
     <string name="action_settings">Einstellungen</string>
     <string name="latlng_unknown">Position unbekannt</string>
     <string name="title_activity_entry">Standort</string>
     <string name="label_name">Titel:</string>
     <string name="hint_name">Titel des Standorts</string>
-    <string name="label_latitude">Latitude:</string>
-    <string name="label_longitude">Longitude:</string>
     <string name="action_save">Speichern</string>
     <string name="error_latlng_invalid">Wert von Latitude/Longitude ist nicht gültig: </string>
     <string name="error_saving_entry">Fehler beim Speichern des Eintrags: </string>

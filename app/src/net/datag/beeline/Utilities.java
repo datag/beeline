@@ -10,17 +10,13 @@ import android.location.Location;
 public class Utilities {
 	private Utilities() {}
 	
-	public static String formatLatitudeLongitude(Location location) {
-		double latitude = location.getLatitude();
- 		double longitude = location.getLongitude();
- 		
- 		return Utilities.formatLatLon(latitude, longitude);
+	public static String formatLatLon(Location location, boolean useLatitude) {
+		return Utilities.formatLatLon((useLatitude == true) ? location.getLatitude() : location.getLongitude());
 	}
 	
 	// TODO: format degree/minutes/seconds + direction, e.g. 51° 28' 38" N
-	public static String formatLatLon(double latitude, double longitude) {
- 		return String.format("lat (φ): % 10.5f" + "%n" + "lon (λ): % 10.5f",
- 				latitude, longitude);
+	public static String formatLatLon(double value) {
+ 		return String.format("% 10.5f", value);
 	}
 	
 	// TODO: switch for meters/miles
