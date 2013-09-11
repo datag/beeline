@@ -14,7 +14,7 @@ import android.widget.Toast;
 
 public class EntryActivity extends Activity {
 	public static final String EXTRA_ENTRY_DETAILS = "net.datag.beeline.EntryDetails";
-	
+
 	private Integer idEntry;
 	private EditText editName;
 	private EditText editLatitude;
@@ -24,29 +24,29 @@ public class EntryActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_entry);
-		
+
 		// Show the Up button in the action bar.
 		setupActionBar();
-		
+
 		editName = (EditText) findViewById(R.id.edit_name);
 		editLatitude = (EditText) findViewById(R.id.edit_latitude);
 		editLongitude = (EditText) findViewById(R.id.edit_longitude);
-		
-		
+
+
 		// as a workaround to Android issue #2626, apply own key listener to latitude/longitude fields
 		DecimalLocaleKeyListener latlonKeyListener = new DecimalLocaleKeyListener();
-		 
+
 		editLatitude.setKeyListener(latlonKeyListener);
 		editLongitude.setKeyListener(latlonKeyListener);
-		
-		
+
+
 		// extract intent data
 		Intent intent = getIntent();
 		Bundle bundle = intent.getBundleExtra(EXTRA_ENTRY_DETAILS);
-		
+
 		double lat = .0;
 		double lng = .0;
-		
+
 		if (bundle.getBoolean("create") == true) {
 			// new entry
 			if (bundle.getBoolean("useLocation") == true) {
@@ -56,11 +56,11 @@ public class EntryActivity extends Activity {
 		} else {
 			// edit entry
 			idEntry = bundle.getInt("id");
-			
+
 			LocationEntryDbHelper dbHelper = new LocationEntryDbHelper(this);
 			try {
 				Entry entry = dbHelper.find(idEntry);
-				
+
 				editName.setText(entry.name);
 				lat = entry.latitude;
 				lng = entry.longitude;
@@ -68,7 +68,7 @@ public class EntryActivity extends Activity {
 				Toast.makeText(this, getResources().getText(R.string.error_entry_not_found), Toast.LENGTH_LONG).show();
 			}
 		}
-		
+
 		editLatitude.setText(Utilities.geoCoordForInput(lat));
 		editLongitude.setText(Utilities.geoCoordForInput(lng));
 	}
@@ -102,12 +102,12 @@ public class EntryActivity extends Activity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
-	
+
 	protected boolean save() {
 		String name = editName.getText().toString();
 		double lat = .0;
 		double lng = .0;
-		
+
 		try {
 			lat = Utilities.parseGeoCoord(editLatitude.getText().toString());
 			lng = Utilities.parseGeoCoord(editLongitude.getText().toString());
@@ -115,20 +115,20 @@ public class EntryActivity extends Activity {
 			Toast.makeText(this, getResources().getText(R.string.error_latlng_invalid) + " " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
 			return false;
 		}
-		
+
 		try {
 			LocationEntryDbHelper dbHelper = new LocationEntryDbHelper(this);
 			Entry entry = dbHelper.new Entry(idEntry, name, lat, lng);
-			
+
 			if (entry.name.trim().isEmpty()) {
 				entry.name = String.format("%s (%.2f/%.2f)", getResources().getText(R.string.location), lat, lng);
 			}
-			
+
 			dbHelper.save(entry);
 		} catch (Exception e) {
 			Toast.makeText(this, getResources().getText(R.string.error_saving_entry) + " " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
 		}
-		
+
 		return true;
 	}
 

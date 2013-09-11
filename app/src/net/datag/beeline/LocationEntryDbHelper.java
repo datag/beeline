@@ -9,23 +9,23 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class LocationEntryDbHelper extends SQLiteOpenHelper {
 	public static final int DATABASE_VERSION = 4;
-    public static final String DATABASE_NAME = "LocationEntries.db";
-    
-    private static final String SQL_CREATE_ENTRIES =
-        "CREATE TABLE " + LocationEntry.TABLE_NAME + " (" +
-        		LocationEntry._ID + " INTEGER PRIMARY KEY," +
-        		LocationEntry.COLUMN_NAME_NAME + " TEXT," +
-        		LocationEntry.COLUMN_NAME_LATITUDE + " REAL," +
-        		LocationEntry.COLUMN_NAME_LONGITUDE + " REAL" +
-        		" )";
+	public static final String DATABASE_NAME = "LocationEntries.db";
 
-//    private static final String SQL_DELETE_ENTRIES =
-//        "DROP TABLE IF EXISTS " + LocationEntry.TABLE_NAME;
-    
-    public LocationEntryDbHelper(Context context) {
+	private static final String SQL_CREATE_ENTRIES =
+			"CREATE TABLE " + LocationEntry.TABLE_NAME + " (" +
+					LocationEntry._ID + " INTEGER PRIMARY KEY," +
+					LocationEntry.COLUMN_NAME_NAME + " TEXT," +
+					LocationEntry.COLUMN_NAME_LATITUDE + " REAL," +
+					LocationEntry.COLUMN_NAME_LONGITUDE + " REAL" +
+					" )";
+
+//	private static final String SQL_DELETE_ENTRIES =
+//			"DROP TABLE IF EXISTS " + LocationEntry.TABLE_NAME;
+
+	public LocationEntryDbHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
-    
+
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		db.execSQL(SQL_CREATE_ENTRIES);
@@ -41,46 +41,46 @@ public class LocationEntryDbHelper extends SQLiteOpenHelper {
 	public Entry find(int id) throws Exception {
 		SQLiteDatabase db = this.getReadableDatabase();
 		Entry entry = null;
-		
+
 		try {
 			String[] columns = new String[] {
-				LocationEntry._ID,
-				LocationEntry.COLUMN_NAME_NAME,
-				LocationEntry.COLUMN_NAME_LATITUDE,
-				LocationEntry.COLUMN_NAME_LONGITUDE
+					LocationEntry._ID,
+					LocationEntry.COLUMN_NAME_NAME,
+					LocationEntry.COLUMN_NAME_LATITUDE,
+					LocationEntry.COLUMN_NAME_LONGITUDE
 			};
-			
+
 			String selection = LocationEntry._ID + " = ?";
 			String[] selectionArgs = { String.valueOf(id) };
 			String limit = "1";
-			
+
 			Cursor c = db.query(LocationEntry.TABLE_NAME, columns, selection, selectionArgs, null, null, null, limit);
 			if (c.moveToFirst() == false) {
 				throw new Exception("Entry not found");
 			}
-			
+
 			entry = new Entry(c.getInt(c.getColumnIndex(LocationEntry._ID)),
-						c.getString(c.getColumnIndex(LocationEntry.COLUMN_NAME_NAME)),
-						c.getDouble(c.getColumnIndex(LocationEntry.COLUMN_NAME_LATITUDE)),
-						c.getDouble(c.getColumnIndex(LocationEntry.COLUMN_NAME_LONGITUDE)));
+					c.getString(c.getColumnIndex(LocationEntry.COLUMN_NAME_NAME)),
+					c.getDouble(c.getColumnIndex(LocationEntry.COLUMN_NAME_LATITUDE)),
+					c.getDouble(c.getColumnIndex(LocationEntry.COLUMN_NAME_LONGITUDE)));
 		} catch (Exception e) {
 			throw e;
 		} finally {
 			db.close();
 		}
-		
+
 		return entry;
 	}
-	
+
 	public void save(Entry entry) throws Exception {
 		SQLiteDatabase db = this.getWritableDatabase();
-		
+
 		try {
 			ContentValues values = new ContentValues();
 			values.put(LocationEntry.COLUMN_NAME_NAME, entry.name);
 			values.put(LocationEntry.COLUMN_NAME_LATITUDE, entry.latitude);
 			values.put(LocationEntry.COLUMN_NAME_LONGITUDE, entry.longitude);
-			
+
 			if (entry.id != null) {
 				String whereClause = LocationEntry._ID + " = ?";
 				String[] whereArgs = { String.valueOf(entry.id) };
@@ -96,14 +96,14 @@ public class LocationEntryDbHelper extends SQLiteOpenHelper {
 			db.close();
 		}
 	}
-	
+
 	public void delete(int id) throws Exception {
 		SQLiteDatabase db = this.getWritableDatabase();
-		
+
 		try {
 			String whereClause = LocationEntry._ID + " = ?";
 			String[] whereArgs = { String.valueOf(id) };
-			
+
 			if (db.delete(LocationEntry.TABLE_NAME, whereClause, whereArgs) == 0) {
 				throw new Exception("No rows were deleted.");
 			}
@@ -113,7 +113,7 @@ public class LocationEntryDbHelper extends SQLiteOpenHelper {
 			db.close();
 		}
 	}
-	
+
 	final public class Entry {
 		public Integer id;
 		public String name;
