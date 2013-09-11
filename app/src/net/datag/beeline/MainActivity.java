@@ -230,9 +230,9 @@ public class MainActivity extends Activity implements
 		case R.id.action_new:
 			openEntry(null);
 			return true;
-		case R.id.action_settings:
-			Toast.makeText(this, "TODO: settings.", Toast.LENGTH_SHORT).show();
-			return true;
+//		case R.id.action_settings:
+//			Toast.makeText(this, "TODO: settings.", Toast.LENGTH_SHORT).show();
+//			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
