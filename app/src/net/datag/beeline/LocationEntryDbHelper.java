@@ -19,8 +19,8 @@ public class LocationEntryDbHelper extends SQLiteOpenHelper {
         		LocationEntry.COLUMN_NAME_LONGITUDE + " REAL" +
         		" )";
 
-    private static final String SQL_DELETE_ENTRIES =
-        "DROP TABLE IF EXISTS " + LocationEntry.TABLE_NAME;
+//    private static final String SQL_DELETE_ENTRIES =
+//        "DROP TABLE IF EXISTS " + LocationEntry.TABLE_NAME;
     
     public LocationEntryDbHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -38,58 +38,79 @@ public class LocationEntryDbHelper extends SQLiteOpenHelper {
 //        onCreate(db);
 	}
 
-	public Entry find(int id) {
+	public Entry find(int id) throws Exception {
 		SQLiteDatabase db = this.getReadableDatabase();
+		Entry entry = null;
 		
-		String[] columns = new String[] {
-			LocationEntry._ID,
-			LocationEntry.COLUMN_NAME_NAME,
-			LocationEntry.COLUMN_NAME_LATITUDE,
-			LocationEntry.COLUMN_NAME_LONGITUDE
-		};
-		
-		String selection = LocationEntry._ID + " = ?";
-		String[] selectionArgs = { String.valueOf(id) };
-		String limit = "1";
-		
-		Cursor c = db.query(LocationEntry.TABLE_NAME, columns, selection, selectionArgs, null, null, null, limit);
-		if (c.moveToFirst() == false) {
-			return null;
+		try {
+			String[] columns = new String[] {
+				LocationEntry._ID,
+				LocationEntry.COLUMN_NAME_NAME,
+				LocationEntry.COLUMN_NAME_LATITUDE,
+				LocationEntry.COLUMN_NAME_LONGITUDE
+			};
+			
+			String selection = LocationEntry._ID + " = ?";
+			String[] selectionArgs = { String.valueOf(id) };
+			String limit = "1";
+			
+			Cursor c = db.query(LocationEntry.TABLE_NAME, columns, selection, selectionArgs, null, null, null, limit);
+			if (c.moveToFirst() == false) {
+				throw new Exception("Entry not found");
+			}
+			
+			entry = new Entry(c.getInt(c.getColumnIndex(LocationEntry._ID)),
+						c.getString(c.getColumnIndex(LocationEntry.COLUMN_NAME_NAME)),
+						c.getDouble(c.getColumnIndex(LocationEntry.COLUMN_NAME_LATITUDE)),
+						c.getDouble(c.getColumnIndex(LocationEntry.COLUMN_NAME_LONGITUDE)));
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			db.close();
 		}
 		
-		return new Entry(c.getInt(c.getColumnIndex(LocationEntry._ID)),
-				c.getString(c.getColumnIndex(LocationEntry.COLUMN_NAME_NAME)),
-				c.getDouble(c.getColumnIndex(LocationEntry.COLUMN_NAME_LATITUDE)),
-				c.getDouble(c.getColumnIndex(LocationEntry.COLUMN_NAME_LONGITUDE)));
+		return entry;
 	}
 	
 	public void save(Entry entry) throws Exception {
 		SQLiteDatabase db = this.getWritableDatabase();
 		
-		ContentValues values = new ContentValues();
-		values.put(LocationEntry.COLUMN_NAME_NAME, entry.name);
-		values.put(LocationEntry.COLUMN_NAME_LATITUDE, entry.latitude);
-		values.put(LocationEntry.COLUMN_NAME_LONGITUDE, entry.longitude);
-		
-		if (entry.id != null) {
-			String whereClause = LocationEntry._ID + " = ?";
-			String[] whereArgs = { String.valueOf(entry.id) };
-			db.update(LocationEntry.TABLE_NAME, values, whereClause, whereArgs);
-		} else {
-			if (db.insert(LocationEntry.TABLE_NAME, null, values) == -1) {
-				throw new Exception("No rows were inserted.");
+		try {
+			ContentValues values = new ContentValues();
+			values.put(LocationEntry.COLUMN_NAME_NAME, entry.name);
+			values.put(LocationEntry.COLUMN_NAME_LATITUDE, entry.latitude);
+			values.put(LocationEntry.COLUMN_NAME_LONGITUDE, entry.longitude);
+			
+			if (entry.id != null) {
+				String whereClause = LocationEntry._ID + " = ?";
+				String[] whereArgs = { String.valueOf(entry.id) };
+				db.update(LocationEntry.TABLE_NAME, values, whereClause, whereArgs);
+			} else {
+				if (db.insert(LocationEntry.TABLE_NAME, null, values) == -1) {
+					throw new Exception("No rows were inserted.");
+				}
 			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			db.close();
 		}
 	}
 	
 	public void delete(int id) throws Exception {
 		SQLiteDatabase db = this.getWritableDatabase();
 		
-		String whereClause = LocationEntry._ID + " = ?";
-		String[] whereArgs = { String.valueOf(id) };
-		
-		if (db.delete(LocationEntry.TABLE_NAME, whereClause, whereArgs) == 0) {
-			throw new Exception("No rows were deleted.");
+		try {
+			String whereClause = LocationEntry._ID + " = ?";
+			String[] whereArgs = { String.valueOf(id) };
+			
+			if (db.delete(LocationEntry.TABLE_NAME, whereClause, whereArgs) == 0) {
+				throw new Exception("No rows were deleted.");
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			db.close();
 		}
 	}
 	

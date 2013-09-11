@@ -49,6 +49,9 @@ public class MainActivity extends Activity implements
 	private TextView textLatLng;
 	private ListView listLocations;
 	private Location lastLocation;
+
+	private SQLiteDatabase dbh;
+	private Cursor dbc;
 	
 	SimpleCursorAdapter mAdapter;
 
@@ -72,14 +75,14 @@ public class MainActivity extends Activity implements
         // initialize location client
         mLocationClient = new LocationClient(this, this, this);
         
+        // initialize database handler
+        LocationEntryDbHelper dbHelper = new LocationEntryDbHelper(this);
+        dbh = dbHelper.getReadableDatabase();
+        
         initListView();
 	}
 	
 	protected Cursor queryEntries() {
-		LocationEntryDbHelper dbHelper = new LocationEntryDbHelper(this);
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-
-
 	     // Define a projection that specifies which columns from the database
 	     // you will actually use after this query.
 	     String[] projection = {
@@ -93,7 +96,7 @@ public class MainActivity extends Activity implements
 	     String sortOrder =
 	    		 LocationEntry.COLUMN_NAME_NAME + " ASC";
 	
-	     Cursor c = db.query(
+	     Cursor c = dbh.query(
 	         LocationEntry.TABLE_NAME,  // The table to query
 	         projection,                               // The columns to return
 	         null /*selection*/,                                // The columns for the WHERE clause
@@ -107,7 +110,7 @@ public class MainActivity extends Activity implements
 	}
 	
 	protected void initListView() {
-         Cursor c = queryEntries();
+         dbc = queryEntries();
 	     
 	     // add to list-view
 	     final class EntryCursorAdapter extends CursorAdapter {
@@ -163,7 +166,7 @@ public class MainActivity extends Activity implements
 			} 
 	     };
 		 
-	     listLocations.setAdapter(new EntryCursorAdapter(this, c));
+	     listLocations.setAdapter(new EntryCursorAdapter(this, dbc));
 	     
 	     registerForContextMenu(listLocations);
 	}
@@ -197,6 +200,21 @@ public class MainActivity extends Activity implements
 		
 		// connect location client on start
 		mLocationClient.connect();
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		
+		// close cursor
+		if (dbc != null && !dbc.isClosed()) {
+			dbc.close();
+		}
+		
+		// close database
+		if (dbh != null && dbh.isOpen()) {
+			dbh.close();
+		}
 	}
 
 	@Override
@@ -253,8 +271,8 @@ public class MainActivity extends Activity implements
             case ENTRY_ACTION_REQUEST:
             	if (resultCode == RESULT_OK) {
             		// refresh
-            		Cursor c = queryEntries();
-            		((CursorAdapter) listLocations.getAdapter()).changeCursor(c);
+            		dbc = queryEntries();
+            		((CursorAdapter) listLocations.getAdapter()).changeCursor(dbc);
             	}
             	break;
             default:
@@ -373,7 +391,7 @@ public class MainActivity extends Activity implements
 		}
 		
 		// refresh
-		Cursor c = queryEntries();
-		((CursorAdapter) listLocations.getAdapter()).changeCursor(c);
+		dbc = queryEntries();
+		((CursorAdapter) listLocations.getAdapter()).changeCursor(dbc);
 	}
 }

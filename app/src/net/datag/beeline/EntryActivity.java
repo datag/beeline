@@ -1,14 +1,11 @@
 package net.datag.beeline;
 
-import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 
 import net.datag.beeline.LocationEntryDbHelper.Entry;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
-import android.text.InputType;
-import android.text.method.DigitsKeyListener;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -61,12 +58,13 @@ public class EntryActivity extends Activity {
 			idEntry = bundle.getInt("id");
 			
 			LocationEntryDbHelper dbHelper = new LocationEntryDbHelper(this);
-			Entry entry = dbHelper.find(idEntry);
-			if (entry != null) {
+			try {
+				Entry entry = dbHelper.find(idEntry);
+				
 				editName.setText(entry.name);
 				lat = entry.latitude;
 				lng = entry.longitude;
-			} else {
+			} catch (Exception e) {
 				Toast.makeText(this, getResources().getText(R.string.error_entry_not_found), Toast.LENGTH_LONG).show();
 			}
 		}
