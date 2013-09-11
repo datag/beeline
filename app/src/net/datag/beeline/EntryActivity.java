@@ -82,8 +82,9 @@ public class EntryActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case android.R.id.home:
-			// handle by framework
-			return false;
+			// don't make use of android-support-v4 and just finish activity
+			finish();
+			return true;
 		case R.id.action_save:
 			if (save() == true) {
 				setResult(RESULT_OK);
