@@ -252,8 +252,6 @@ public class MainActivity extends Activity implements
                 break;
             case ENTRY_ACTION_REQUEST:
             	if (resultCode == RESULT_OK) {
-            		System.out.println("entry action; resultCode=" + resultCode);
-            		
             		// refresh
             		Cursor c = queryEntries();
             		((CursorAdapter) listLocations.getAdapter()).changeCursor(c);
@@ -303,8 +301,7 @@ public class MainActivity extends Activity implements
 
 	@Override
 	public void onConnected(Bundle bundle) {
-//		Toast.makeText(this, "Connected to location client", Toast.LENGTH_SHORT).show();
-		System.out.println("Connected to location client.");
+//		System.out.println("Connected to location client.");
 		
 		// one-shot update
 		updateLocations(mLocationClient.getLastLocation());
@@ -315,15 +312,14 @@ public class MainActivity extends Activity implements
 
 	@Override
 	public void onDisconnected() {
-//		Toast.makeText(this, "Disconnected from location client", Toast.LENGTH_SHORT).show();
-		System.out.println("Disonnected from location client.");
+//		System.out.println("Disonnected from location client.");
 	}
 
 	@Override
 	public void onLocationChanged(Location location) {
-		System.out.println("Location has been changed: " +
-                Double.toString(location.getLatitude()) + "," +
-                Double.toString(location.getLongitude()));
+//		System.out.println("Location has been changed: " +
+//                Double.toString(location.getLatitude()) + "," +
+//                Double.toString(location.getLongitude()));
         
 		updateLocations(location);
 	}
