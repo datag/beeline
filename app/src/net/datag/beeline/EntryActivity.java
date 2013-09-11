@@ -1,11 +1,14 @@
 package net.datag.beeline;
 
+import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 
 import net.datag.beeline.LocationEntryDbHelper.Entry;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
+import android.text.InputType;
+import android.text.method.DigitsKeyListener;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -31,6 +34,13 @@ public class EntryActivity extends Activity {
 		editName = (EditText) findViewById(R.id.edit_name);
 		editLatitude = (EditText) findViewById(R.id.edit_latitude);
 		editLongitude = (EditText) findViewById(R.id.edit_longitude);
+		
+		
+		// as a workaround to Android issue #2626, apply own key listener to latitude/longitude fields
+		DecimalLocaleKeyListener latlonKeyListener = new DecimalLocaleKeyListener();
+		 
+		editLatitude.setKeyListener(latlonKeyListener);
+		editLongitude.setKeyListener(latlonKeyListener);
 		
 		
 		// extract intent data
