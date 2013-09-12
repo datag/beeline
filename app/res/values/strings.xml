@@ -16,9 +16,12 @@
     <string name="error_latlng_invalid">Value of latitude/longitude is not valid: </string>
     <string name="error_saving_entry">Error saving entry: </string>
     <string name="error_deleting_entry">Error deleting entry: </string>
+    <string name="error_showing_entry">Error showing entry: </string>
     <string name="error_entry_not_found">Error: The entry could not be found.</string>
 	<string name="action_edit">Edit</string>
+	<string name="action_showentry_point">Show on map</string>
+	<string name="action_showentry_route">Get directions</string>
 	<string name="action_delete">Delete</string>
 	<string name="location">Location</string>
-	
+
 </resources>

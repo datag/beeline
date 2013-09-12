@@ -1,6 +1,9 @@
 package net.datag.beeline;
 
+import java.util.Locale;
+
 import net.datag.beeline.LocationEntryContract.LocationEntry;
+import net.datag.beeline.LocationEntryDbHelper.Entry;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
@@ -9,6 +12,7 @@ import android.content.IntentSender;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -177,7 +181,7 @@ GooglePlayServicesClient.OnConnectionFailedListener {
 
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//				Toast.makeText(MainActivity.this, "item clicked: " + id, Toast.LENGTH_LONG).show();
+				MainActivity.this.showEntry((int) id, false);
 			}});
 	}
 
@@ -248,7 +252,7 @@ GooglePlayServicesClient.OnConnectionFailedListener {
 		}
 	}
 
-	private void openEntry(Integer id) {
+	protected void openEntry(Integer id) {
 		Intent intent = new Intent(this, EntryActivity.class);
 		Bundle extra = new Bundle();
 
@@ -380,19 +384,26 @@ GooglePlayServicesClient.OnConnectionFailedListener {
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+		int idEntry = (int) info.id;
 		switch (item.getItemId()) {
 		case R.id.action_edit:
-			openEntry((int) info.id);
+			openEntry(idEntry);
 			return true;
 		case R.id.action_delete:
-			deleteEntry((int) info.id);
+			deleteEntry(idEntry);
+			return true;
+		case R.id.action_showentry_point:
+			showEntry(idEntry, false);
+			return true;
+		case R.id.action_showentry_route:
+			showEntry(idEntry, true);
 			return true;
 		default:
 			return super.onContextItemSelected(item);
 		}
 	}
 
-	private void deleteEntry(int id) {
+	protected void deleteEntry(int id) {
 		try {
 			LocationEntryDbHelper dbHelper = new LocationEntryDbHelper(this);
 			dbHelper.delete(id);
@@ -403,5 +414,40 @@ GooglePlayServicesClient.OnConnectionFailedListener {
 		// refresh
 		dbc = queryEntries();
 		((CursorAdapter) listLocations.getAdapter()).changeCursor(dbc);
+	}
+	
+	protected void showEntry(int id, boolean route) {
+		LocationEntryDbHelper dbHelper = new LocationEntryDbHelper(this);
+		Entry entry;
+		try {
+			entry = dbHelper.find(id);
+			
+			Uri uri;
+			if (!route || lastLocation == null) {
+				// geo:<lat>,<lon>?z=<zoom>		see http://tools.ietf.org/html/draft-mayrhofer-geo-uri-00
+				// Google App Intents: <http://developer.android.com/guide/appendix/g-app-intents.html>
+				// NOTE: Uri.Builder does not support opaque path with query params
+				final int zoom = 15;
+				String uriString = String.format(Locale.US, "geo:%.5f,%.5f?z=%d", entry.latitude, entry.longitude, zoom);
+				uri = Uri.parse(uriString);
+			} else {
+				// works at least with Google Maps 
+				uri = (new Uri.Builder())
+						.scheme("https")
+						.authority("maps.google.com")
+						.path("/maps")
+						.appendQueryParameter("saddr", String.format(Locale.US, "%.5f,%.5f", lastLocation.getLatitude(), lastLocation.getLongitude()))
+						.appendQueryParameter("daddr", String.format(Locale.US, "%.5f,%.5f", entry.latitude, entry.longitude))
+						.build();
+			}
+			
+//			System.out.println("URI=" + uri);
+			
+			Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+			startActivity(intent);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Toast.makeText(this, getResources().getText(R.string.error_showing_entry) + " " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+		}
 	}
 }

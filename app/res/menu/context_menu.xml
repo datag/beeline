@@ -8,6 +8,16 @@
         android:title="@string/action_edit"/>
 	
 	<item
+        android:id="@+id/action_showentry_point"
+        android:showAsAction="ifRoom"
+        android:title="@string/action_showentry_point"/>
+	
+	<item
+        android:id="@+id/action_showentry_route"
+        android:showAsAction="ifRoom"
+        android:title="@string/action_showentry_route"/>
+	
+	<item
         android:id="@+id/action_delete"
         android:showAsAction="always"
         android:icon="@drawable/ic_action_delete"
