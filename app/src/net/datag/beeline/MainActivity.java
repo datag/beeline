@@ -17,7 +17,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -169,6 +171,14 @@ GooglePlayServicesClient.OnConnectionFailedListener {
 		listLocations.setAdapter(new EntryCursorAdapter(this, dbc));
 
 		registerForContextMenu(listLocations);
+		
+		// set handler for item click
+		listLocations.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//				Toast.makeText(MainActivity.this, "item clicked: " + id, Toast.LENGTH_LONG).show();
+			}});
 	}
 
 	@Override
